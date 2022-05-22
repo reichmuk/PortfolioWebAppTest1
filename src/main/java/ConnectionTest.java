@@ -5,7 +5,7 @@ import java.sql.Statement;
 
 public class ConnectionTest {
 
-    public static void main(String[] args){
+    public void testing(){
 
         Connection conn = null;
         String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
@@ -23,7 +23,6 @@ public class ConnectionTest {
         }catch (SQLException e){
             e.printStackTrace();
         }
-
 
 
     }

@@ -13,6 +13,15 @@
         <element id="directory" name="classes">
           <element id="module-output" name="PortfolioWebApp" />
         </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: com.yahoofinance-api:YahooFinanceAPI:3.17.0" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.12.6.1" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.12.6" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.12.6" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:2.0.0-alpha7" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-simple:2.0.0-alpha7" />
+          <element id="library" level="project" name="Maven: org.json:json:20220320" />
+        </element>
       </element>
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/target/PortfolioWebApp-1.0-SNAPSHOT/META-INF/MANIFEST.MF" />
