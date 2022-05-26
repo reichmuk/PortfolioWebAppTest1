@@ -3,77 +3,55 @@ import org.json.JSONObject;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.Interval;
-
-import javax.json.JsonObject;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
+import java.sql.Connection;
 import java.util.Calendar;
-import java.util.Iterator;
 
 
 public class YahooApi {
 
-    public YahooApi(){
+    private SqlTable sqlTable;
 
+    public YahooApi(){
+        sqlTable = new SqlTable();
     }
 
-    public void testAPI(String ticker){
+    public void priceImport(String ticker){
 
+        SqlTable sqlTable = new SqlTable();
+        //int id = sqlTable.getInstrumentID(ticker);
+        String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=5d&symbols="+ticker;
+
+        //Connect to Yahoo API
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://yfapi.net/v8/finance/spark?interval=1d&range=5d&symbols=UBSG.SW"))
+                .uri(URI.create(yahooUri))
                 .header("x-api-key", "sJXuN0xzJZ3hhqjjecWvHa90v3FtWMIj29B0rFB7")
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
         try{
+            //Create JSON Object
             HttpResponse<String> response = HttpClient.newHttpClient()
                     .send(request, HttpResponse.BodyHandlers.ofString());
             JSONObject jsonObject = new JSONObject(response.body());
-            System.out.println(response.body());
 
+            //Get the data from the JSON Object
+            JSONArray jsonArrayDate = (JSONArray) jsonObject.getJSONObject(ticker).get("timestamp");
+            JSONArray jsonArrayPrice = (JSONArray) jsonObject.getJSONObject(ticker).get("close");
 
-            //Get the Dates of the JSONFile
-
-            JSONArray jsonArrayDate = (JSONArray) jsonObject.getJSONObject("UBSG.SW").get("timestamp");
-            JSONArray jsonArrayPrice = (JSONArray) jsonObject.getJSONObject("UBSG.SW").get("close");
-            Iterator<Object> iterator = jsonArrayDate.iterator();
-            while(iterator.hasNext()){
-                System.out.println(iterator.next());
+            //Upload data to mySQL
+            for(int i = 0; i<jsonArrayDate.length();i++){
+                String stringTimeStamp = jsonArrayDate.get(i).toString();
+                int timestamp = Integer.parseInt(stringTimeStamp);
+                String stringPrice = jsonArrayPrice.get(i).toString();
+                float price = Float.parseFloat(stringPrice);
+                sqlTable.insertPrice(ticker,timestamp,price);
             }
-
-            //JSONArray jsonArray = new JSONArray(response.body());
-            //for(int i = 0; i<jsonArray.length();i++){
-            //    JSONObject object = jsonArray.getJSONObject(i);
-                //System.out.println(object.getString("timestamp"));
-                //System.out.println(object.getString("close"));
-            //}
-
-            ArrayList<String> list1 = new ArrayList<String>();
-
         }catch (Exception e){
             e.printStackTrace();
         }
-
-    }
-
-
-    public void testAPI2(){
-        try {
-            //Stock stock = YahooFinance.get("UBSG.SW");
-            //stock.print();
-
-            Calendar from = Calendar.getInstance();
-            Calendar to = Calendar.getInstance();
-            from.add(Calendar.YEAR, -1); // from 5 years ago
-
-            Stock google = YahooFinance.get("GOOG", from, to, Interval.DAILY);
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
     }
 
 
