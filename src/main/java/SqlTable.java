@@ -55,6 +55,24 @@ public class SqlTable {
         } else {return timeStampList;}
     }
 
+    public ArrayList<Float> getMetricList(String metric, String ticker){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        ArrayList<Float> metricList = new ArrayList<Float>();
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT value from metrics where ticker="+tickerString+" && metric ="+metricString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                float value = Float.parseFloat(resultSet.getString("value"));
+                metricList.add(value);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return metricList;
+    }
 
 
     public void insertMetric(String ticker, int timeStamp, String metric, float value){
@@ -68,8 +86,21 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
-
     }
+
+    public void insertMetricSummary(String ticker, String metric, float value){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+metricString+","+value+");";
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
 
     public void createSqlTable(String ticker){
         String tableName = "Prices"+ ticker;

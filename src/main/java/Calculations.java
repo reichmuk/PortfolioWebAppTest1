@@ -9,7 +9,6 @@ public class Calculations {
         sqlTable = new SqlTable();
     }
 
-
     public void calcSingleReturn(String ticker){
         ArrayList<Float> prices = sqlTable.getPriceList("price",ticker);
         ArrayList<Float> timeStamps = sqlTable.getPriceList("time_stamp",ticker);
@@ -21,11 +20,15 @@ public class Calculations {
                 int timeStampInt = (int) timeStamp;
                 sqlTable.insertMetric(ticker,timeStampInt,"simpleReturn",simpleReturn);
                 sqlTable.insertMetric(ticker,timeStampInt,"steadyReturn",steadyReturn);
-                //System.out.println("simple return: "+simpleReturn+" steady return: "+steadyReturn);
             }
-
         }
-
-
     }
+
+    public void calcMetricSummary(String ticker){
+        ArrayList<Float> steadyReturns = sqlTable.getMetricList("steadyReturn",ticker);
+        ArrayList<Float> simpleReturns = sqlTable.getMetricList("simpleReturn", ticker);
+    }
+
+
+
 }
