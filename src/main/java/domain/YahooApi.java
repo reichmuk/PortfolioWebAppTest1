@@ -1,14 +1,11 @@
+package domain;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import yahoofinance.Stock;
-import yahoofinance.YahooFinance;
-import yahoofinance.histquotes.Interval;
+import persistance.SqlTable;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.Connection;
-import java.util.Calendar;
 
 
 public class YahooApi {
@@ -16,12 +13,12 @@ public class YahooApi {
     private SqlTable sqlTable;
 
     public YahooApi(){
-        sqlTable = new SqlTable();
+        sqlTable = Control.getSqlTable();
     }
 
     public void priceImport(String ticker){
 
-        SqlTable sqlTable = new SqlTable();
+        //SqlTable sqlTable = new SqlTable();
         //int id = sqlTable.getInstrumentID(ticker);
         String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=5d&symbols="+ticker;
 

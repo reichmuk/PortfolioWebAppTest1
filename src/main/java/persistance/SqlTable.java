@@ -1,3 +1,4 @@
+package persistance;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -92,13 +93,26 @@ public class SqlTable {
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
         Connection connection = getConnection();
-        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+metricString+","+value+");";
+        String sqlCommand = "INSERT INTO metrics_summary VALUES("+tickerString+","+metricString+","+value+");";
         try {
             Statement statement = connection.createStatement();
             statement.execute(sqlCommand);
         }catch (SQLException e){
             e.printStackTrace();
         }
+    }
+
+
+    public void resetTable(String table){
+        Connection connection = getConnection();
+        String sqlCommand = "TRUNCATE TABLE " +table+";";
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -132,16 +146,5 @@ public class SqlTable {
         return instrumentID;
     }
 
-    public void resetPriceTable(){
-        Connection connection = getConnection();
-        String sqlCommand = "TRUNCATE TABLE prices";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-
-    }
 
 }
