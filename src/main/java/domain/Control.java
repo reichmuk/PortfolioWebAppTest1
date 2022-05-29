@@ -28,6 +28,18 @@ public class Control {
         calculations = new Calculations();
         yahooApi = new YahooApi();
 
+        //CREATE PORTFOLIO WITH WEIGHTS
+        //sqlTable.insertPortfolio("UBSG.SW","current", 0.4f);
+        //sqlTable.insertPortfolio("NOVN.SW","current", 0.35f);
+        //sqlTable.insertPortfolio("ABBN.SW","current",0.25f);
+
+        //yahooApi.priceImport("NOVN.SW");
+        //yahooApi.priceImport("ABBN.SW");
+        //calculations.calcSingleReturn("NOVN.SW");
+        //calculations.calcSingleReturn("ABBN.SW");
+        //calculations.calcMetricSummary("NOVN.SW");
+        //calculations.calcMetricSummary("ABBN.SW");
+        calculations.calcPortfolioReturn("current");
 
         //yahooApi.priceImport("UBSG.SW");
         //calculations.calcSingleReturn("UBSG.SW");
@@ -35,6 +47,7 @@ public class Control {
         //sqlTable.resetTable("prices");
         //sqlTable.resetTable("metrics");
         //sqlTable.resetTable("metrics_summary");
+
 
 
 

@@ -53,9 +53,21 @@ public class Calculations {
         standardDeviation = standardDeviation/(steadyReturns.size()-1);
         standardDeviation = (float) Math.sqrt(standardDeviation);
         sqlTable.insertMetricSummary(ticker,"standardDeviation",standardDeviation);
-
     }
 
+    public void calcPortfolioReturn(String portfolio){
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+        float portfolioReturn = 0;
 
+        for(String value:tickerList){
+            if(value!="PORTFOLIO"){
+                float weight = sqlTable.getPortfolioWeight(value,portfolio);
+                float instrumentReturn = sqlTable.getMetricSummaryValue(value,"avgSimpleReturn");
+                portfolioReturn= portfolioReturn+(weight*instrumentReturn);
+                System.out.println(weight*instrumentReturn);
+            }
+        }
+        System.out.println("Der Portfolioreturn beträgt: "+portfolioReturn);
+    }
 
 }

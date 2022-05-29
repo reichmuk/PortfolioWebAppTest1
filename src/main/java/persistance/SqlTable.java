@@ -56,6 +56,19 @@ public class SqlTable {
         } else {return timeStampList;}
     }
 
+    public void insertMetric(String ticker, int timeStamp, String metric, float value){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+timeStamp+","+metricString+","+value+");";
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
     public ArrayList<Float> getMetricList(String metric, String ticker){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
@@ -75,20 +88,6 @@ public class SqlTable {
         return metricList;
     }
 
-
-    public void insertMetric(String ticker, int timeStamp, String metric, float value){
-        String tickerString = "\""+ticker+"\"";
-        String metricString = "\""+metric+"\"";
-        Connection connection = getConnection();
-        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+timeStamp+","+metricString+","+value+");";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
     public void insertMetricSummary(String ticker, String metric, float value){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
@@ -101,6 +100,81 @@ public class SqlTable {
             e.printStackTrace();
         }
     }
+
+
+
+    public void insertPortfolio(String ticker, String portfolio, float weight){
+        String tickerString = "\""+ticker+"\"";
+        String portfolioString = "\""+portfolio+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "INSERT INTO portfolio VALUES("+tickerString+","+portfolioString+","+weight+");";
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+    public float getMetricSummaryValue(String ticker, String metric){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        float metricSummaryValue = 0;
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT value from metrics_summary where ticker="+tickerString+" && metric ="+metricString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                float value = Float.parseFloat(resultSet.getString("value"));
+                metricSummaryValue = value;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return metricSummaryValue;
+    }
+
+
+
+    public float getPortfolioWeight(String ticker, String portfolio){
+        String tickerString = "\""+ticker+"\"";
+        String portfolioString = "\""+portfolio+"\"";
+        float portfolioWeight = 0;
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT weight from portfolio where ticker="+tickerString+" && portfolio ="+portfolioString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                float value = Float.parseFloat(resultSet.getString("weight"));
+                portfolioWeight = value;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return portfolioWeight;
+    }
+
+    public ArrayList<String> getPortfolioTickers(String portfolio){
+        String portfolioString = "\""+portfolio+"\"";
+        ArrayList<String> tickerList = new ArrayList<String>();
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT ticker from portfolio where portfolio="+portfolioString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                String value = resultSet.getString("ticker");
+                tickerList.add(value);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return tickerList;
+    }
+
+
 
 
     public void resetTable(String table){
