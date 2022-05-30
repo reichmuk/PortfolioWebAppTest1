@@ -37,8 +37,8 @@ public class MyServlet extends HttpServlet {
             String user = "root";
             String password = "Blue_22!";
             Connection conn = DriverManager.getConnection(url,user,password);
-            //Statement statement = conn.createStatement();
-            //statement.execute("INSERT INTO instruments VALUES (4, 'CH0024608827', 'PGHN.SW', 'CHF', 'Partners Group', 'Switzerland')");
+            Statement statement = conn.createStatement();
+            statement.execute("INSERT INTO instruments VALUES ('del', 'CHF', 'Delia', 'Switzerland')");
             System.out.println("Connection created");
             conn.close();
 
