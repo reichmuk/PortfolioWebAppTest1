@@ -11,7 +11,9 @@
     <title>PortfolioWebApp</title>
 </head>
 <body>
-    <h1>Simple Java Web App Demo</h1>
-    <p>To invoke the java servlet click <a href="MyServlet">here</a></p>
+    <h1>Portfolio Web App!!</h1>
+    <p>Initialize-Servlet <a href="MyServlet">here</a></p>
+    <p>Reset-Servlet <a href="ResetServlet">here</a></p>
+    <p>Run-Servlet <a href="RunServlet">here</a></p>
 </body>
 </html>

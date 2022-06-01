@@ -8,11 +8,31 @@
         <servlet-name>MyServlet</servlet-name>
         <servlet-class>MyServlet</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>MyServlet</servlet-name>
         <url-pattern>/MyServlet</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ResetServlet</servlet-name>
+        <servlet-class>viewmodel.ResetServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ResetServlet</servlet-name>
+        <url-pattern>/ResetServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RunServlet</servlet-name>
+        <servlet-class>viewmodel.RunServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RunServlet</servlet-name>
+        <url-pattern>/RunServlet</url-pattern>
+    </servlet-mapping>
+
+
+
 
     <description>My SQL Test App</description>
 

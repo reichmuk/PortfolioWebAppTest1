@@ -70,4 +70,31 @@ public class Calculations {
         System.out.println("Der Portfolioreturn beträgt: "+portfolioReturn);
     }
 
+    public int countPortfolioInstruments(String portfolio){
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+        int counter = 0;
+        for(String value : tickerList){
+            if(value!="PORTFOLIO"){
+                counter++;
+            }
+        }
+        return counter;
+    }
+
+    public void calcPortfolioVolatility(String portfolio){
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+        float portfolioVolatility = 0;
+        int countInstruments = countPortfolioInstruments(portfolio);
+        float weights[] = new float[countInstruments];
+        float varianceCovarianceMatrix[][] = new float[countInstruments][countInstruments];
+
+        for (String value : tickerList){
+            int counter = 0;
+            if(value!="PORTFOLIO"){
+                float weight = sqlTable.getPortfolioWeight(value, portfolio);
+                weights[counter] = weight;
+                counter++;
+            }
+        }
+    }
 }

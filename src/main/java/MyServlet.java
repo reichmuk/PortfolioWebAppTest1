@@ -1,3 +1,5 @@
+import domain.Control;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -24,15 +26,24 @@ public class MyServlet extends HttpServlet {
             writer.println("</head>");
             writer.println("<body>");
 
-            writer.println("<h1>This is a simple java servlet.</h1>");
+            writer.println("<h1>Portfolio Web App Initialized!</h1>");
 
             writer.println("</body>");
             writer.println("</html>");
         }
 
-        try{
-            Class.forName("com.mysql.cj.jdbc.Driver");
+        try {
+            Control control = new Control();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
+
+
+        /*try{
+
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
             String user = "root";
             String password = "Blue_22!";
@@ -55,7 +66,7 @@ public class MyServlet extends HttpServlet {
             System.out.println("SQLException:" + e.getMessage());
             System.out.println("SQLState: " + e.getSQLState());
             System.out.println("VendorError: " + e.getErrorCode());
-        }
+        }*/
 
     }
 

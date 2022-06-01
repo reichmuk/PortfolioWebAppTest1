@@ -136,7 +136,6 @@ public class SqlTable {
     }
 
 
-
     public float getPortfolioWeight(String ticker, String portfolio){
         String tickerString = "\""+ticker+"\"";
         String portfolioString = "\""+portfolio+"\"";
@@ -186,7 +185,6 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
-
     }
 
 
