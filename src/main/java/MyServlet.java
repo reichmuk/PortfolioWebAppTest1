@@ -1,4 +1,7 @@
+import domain.Calculations;
 import domain.Control;
+import domain.YahooApi;
+import persistance.SqlTable;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -73,5 +76,41 @@ public class MyServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        try {
+            Control control = new Control();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        String instrument1 = request.getParameter("instrument1").toString();
+        String instrument2 = request.getParameter("instrument2").toString();
+        String instrument3 = request.getParameter("instrument3").toString();
+
+        SqlTable sqlTable = Control.getSqlTable();
+        sqlTable.insertPortfolio("UBSG.SW","current", 0.4f);
+        sqlTable.insertPortfolio("ABBN.SW","current", 0.35f);
+        sqlTable.insertPortfolio("ZURN.SW","current",0.25f);
+
+        YahooApi yahooApi = Control.getYahooApi();
+        yahooApi.priceImport("UBSG.SW");
+        yahooApi.priceImport("ABBN.SW");
+        yahooApi.priceImport("ZURN.SW");
+
+        Calculations calculations = Control.getCalculations();
+        calculations.calcSingleReturn("UBSG.SW");
+        calculations.calcSingleReturn("ABBN.SW");
+        calculations.calcSingleReturn("ZURN.SW");
+        calculations.calcMetricSummary("UBSG.SW");
+        calculations.calcMetricSummary("ABBN.SW");
+        calculations.calcMetricSummary("ZURN.SW");
+        calculations.calcPortfolioReturn("current");
+        calculations.calcCorrelations("current");
+
+        /*
+        PrintWriter out = response.getWriter();
+        out.println(instrument1);
+        out.println(instrument2);
+        out.println(instrument3);
+        */
     }
 }

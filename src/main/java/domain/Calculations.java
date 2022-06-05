@@ -1,7 +1,5 @@
 package domain;
 import java.util.ArrayList;
-import java.util.Arrays;
-
 import org.apache.commons.lang3.ArrayUtils;
 import persistance.SqlTable;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
@@ -65,9 +63,9 @@ public class Calculations {
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
         for(String ticker1 : tickerList){
             for(String ticker2 : tickerList){
-                String metric = "Correl"+ticker1+ticker2;
-                ArrayList<Double> returnList1 = sqlTable.getMetricListDouble("steadyRetrun",ticker1);
-                ArrayList<Double> returnList2 = sqlTable.getMetricListDouble("steadyRetrun",ticker2);
+                String metric = "Correl-"+ticker1+"-"+ticker2;
+                ArrayList<Double> returnList1 = sqlTable.getMetricListDouble("steadyReturn",ticker1);
+                ArrayList<Double> returnList2 = sqlTable.getMetricListDouble("steadyReturn",ticker2);
                 double[] list1 = ArrayUtils.toPrimitive(returnList1.toArray(new Double[0]));
                 double[] list2 = ArrayUtils.toPrimitive(returnList2.toArray(new Double[0]));
                 double correlation = new PearsonsCorrelation().correlation(list1,list2);
