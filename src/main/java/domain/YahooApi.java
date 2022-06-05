@@ -25,7 +25,7 @@ public class YahooApi {
         //Connect to Yahoo API
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(yahooUri))
-                .header("x-api-key", "sJXuN0xzJZ3hhqjjecWvHa90v3FtWMIj29B0rFB7")
+                .header("x-api-key", "PCjb2ngVmz1wBARQUkmDkIZ2ubhmqvr4GnRWWSe1")
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
         try{

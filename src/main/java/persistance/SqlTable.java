@@ -88,6 +88,27 @@ public class SqlTable {
         return metricList;
     }
 
+    public ArrayList<Double> getMetricListDouble(String metric, String ticker){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        ArrayList<Double> metricList = new ArrayList<Double>();
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT value from metrics where ticker="+tickerString+" && metric ="+metricString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                double value = Double.parseDouble(resultSet.getString("value"));
+                metricList.add(value);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return metricList;
+    }
+
+
+
     public void insertMetricSummary(String ticker, String metric, float value){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";

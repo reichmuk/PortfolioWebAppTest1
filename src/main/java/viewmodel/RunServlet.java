@@ -32,6 +32,7 @@ public class RunServlet extends HttpServlet {
         calculations.calcMetricSummary("ABBN.SW");
         calculations.calcMetricSummary("ZURN.SW");
         calculations.calcPortfolioReturn("current");
+        calculations.calcCorrelations("current");
 
     }
 
