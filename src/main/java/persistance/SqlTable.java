@@ -156,6 +156,25 @@ public class SqlTable {
         return metricSummaryValue;
     }
 
+    public String getInstrumentTicker(String instrument){
+        String instrumentName = "\""+instrument+"\"";
+        String ticker = "";
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT ticker from instruments where name="+instrumentName+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                String value = resultSet.getString("ticker");
+                ticker = value;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return ticker;
+
+    }
+
 
     public float getPortfolioWeight(String ticker, String portfolio){
         String tickerString = "\""+ticker+"\"";

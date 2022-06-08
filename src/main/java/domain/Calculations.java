@@ -87,7 +87,7 @@ public class Calculations {
                 System.out.println(weight*instrumentReturn);
             }
         }
-        System.out.println("Der Portfolioreturn beträgt: "+portfolioReturn);
+        System.out.println("Der Portfolioreturn betraegt: "+portfolioReturn);
     }
 
     public int countPortfolioInstruments(String portfolio){

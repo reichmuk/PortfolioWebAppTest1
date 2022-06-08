@@ -21,7 +21,7 @@
     <form action="MyServlet" method="post">
         <label style="margin-right: 10px">Instrument 1:</label>
         <select name=instrument1 class="form-control" style="width: 250px;">
-            <option inst1="-1">Select Instruments</option>
+            <option inst1="-1">Select Instrument</option>
             <%
             try{
                 String query ="select * from instruments";
@@ -43,13 +43,14 @@
             }
             %>
         </select>
+        Quantity: <input type = "text" name = "quantity1">
 
         <br/>
         <br/>
 
         <label style="margin-right: 10px">Instrument 2:</label>
         <select name=instrument2 class="form-control" style="width: 250px;">
-            <option inst2="-1">Select Instruments</option>
+            <option inst2="-1">Select Instrument</option>
             <%
                 try{
                     String query ="select * from instruments";
@@ -71,13 +72,14 @@
                 }
             %>
         </select>
+        Quantity: <input type = "text" name = "quantity2">
 
         <br/>
         <br/>
 
         <label style="margin-right: 10px">Instrument 3:</label>
         <select name=instrument3 class="form-control" style="width: 250px;">
-            <option inst3="-1">Select Instruments</option>
+            <option inst3="-1">Select Instrument</option>
             <%
                 try{
                     String query ="select * from instruments";
@@ -99,6 +101,7 @@
                 }
             %>
         </select>
+        Quantity: <input type = "text" name = "quantity3">
 
         <br/>
         <br/>

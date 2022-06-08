@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 @WebServlet(name = "MyServlet", value = "/MyServlet")
 public class MyServlet extends HttpServlet {
@@ -82,35 +83,85 @@ public class MyServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
+        SqlTable sqlTable = Control.getSqlTable();
+        Calculations calculations = Control.getCalculations();
+        YahooApi yahooApi = Control.getYahooApi();
+
+        ArrayList<String> instrumentList = new ArrayList<String>();
+        ArrayList<Float> quantityList = new ArrayList<Float>();
+        float totalQuantity = 0;
+
+        for(int i =1; i<4;i++){
+            String instrument = "instrument"+i;
+            String instrumentValue = request.getParameter(instrument).toString();
+            String quantity = "quantity"+i;
+            String quantityValue = request.getParameter(quantity).toString();
+
+            if(instrumentValue.equals("Select Instrument")){
+            }else{
+                instrumentList.add(instrumentValue);
+                quantityList.add(Float.parseFloat(quantityValue));
+            }
+        }
+
+        for(float value : quantityList){
+            totalQuantity = totalQuantity+value;
+        }
+
+
+        for(int i = 0; i<instrumentList.size(); i++){
+            String instrument = instrumentList.get(i);
+            float quantity = quantityList.get(i);
+            float weight = quantity/totalQuantity;
+            String ticker = sqlTable.getInstrumentTicker(instrument);
+            sqlTable.insertPortfolio(ticker,"current", weight);
+            yahooApi.priceImport(ticker);
+            calculations.calcSingleReturn(ticker);
+            calculations.calcMetricSummary(ticker);
+        }
+
+        calculations.calcPortfolioReturn("current");
+        calculations.calcCorrelations("current");
+
+
+
+        /*
         String instrument1 = request.getParameter("instrument1").toString();
         String instrument2 = request.getParameter("instrument2").toString();
         String instrument3 = request.getParameter("instrument3").toString();
+        String quantity1 = request.getParameter("quantity1").toString();
+        String quantity2 = request.getParameter("quantity2").toString();
+        String quantity3 = request.getParameter("quantity3").toString();
 
-        SqlTable sqlTable = Control.getSqlTable();
-        sqlTable.insertPortfolio("UBSG.SW","current", 0.4f);
-        sqlTable.insertPortfolio("ABBN.SW","current", 0.35f);
-        sqlTable.insertPortfolio("ZURN.SW","current",0.25f);
+        String tickerInstrument1 = sqlTable.getInstrumentTicker(instrument1);
+        String tickerInstrument2 = sqlTable.getInstrumentTicker(instrument2);
+        String tickerInstrument3 = sqlTable.getInstrumentTicker(instrument3);
+
+        sqlTable.insertPortfolio(tickerInstrument1,"current", 0.4f);
+        sqlTable.insertPortfolio(tickerInstrument2,"current", 0.35f);
+        sqlTable.insertPortfolio(tickerInstrument3,"current",0.25f);
 
         YahooApi yahooApi = Control.getYahooApi();
-        yahooApi.priceImport("UBSG.SW");
-        yahooApi.priceImport("ABBN.SW");
-        yahooApi.priceImport("ZURN.SW");
+        yahooApi.priceImport(tickerInstrument1);
+        yahooApi.priceImport(tickerInstrument2);
+        yahooApi.priceImport(tickerInstrument3);
 
-        Calculations calculations = Control.getCalculations();
-        calculations.calcSingleReturn("UBSG.SW");
-        calculations.calcSingleReturn("ABBN.SW");
-        calculations.calcSingleReturn("ZURN.SW");
-        calculations.calcMetricSummary("UBSG.SW");
-        calculations.calcMetricSummary("ABBN.SW");
-        calculations.calcMetricSummary("ZURN.SW");
+        calculations.calcSingleReturn(tickerInstrument1);
+        calculations.calcSingleReturn(tickerInstrument2);
+        calculations.calcSingleReturn(tickerInstrument3);
+        calculations.calcMetricSummary(tickerInstrument1);
+        calculations.calcMetricSummary(tickerInstrument2);
+        calculations.calcMetricSummary(tickerInstrument3);
+
         calculations.calcPortfolioReturn("current");
         calculations.calcCorrelations("current");
+         */
 
         /*
         PrintWriter out = response.getWriter();
         out.println(instrument1);
         out.println(instrument2);
         out.println(instrument3);
-        */
+         */
     }
 }
