@@ -42,36 +42,6 @@ public class MyServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-
-
-        /*try{
-
-
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-            String user = "root";
-            String password = "Blue_22!";
-            Connection conn = DriverManager.getConnection(url,user,password);
-            Statement statement = conn.createStatement();
-            statement.execute("INSERT INTO instruments VALUES ('del', 'CHF', 'Delia', 'Switzerland')");
-            System.out.println("Connection created");
-            conn.close();
-
-        }
-
-        catch (ClassNotFoundException e){
-            e.printStackTrace();
-            System.out.println("Fehler1");
-            System.out.println(e.getMessage());
-        }
-        catch (SQLException e){
-            e.printStackTrace();
-            System.out.println("Fehler2");
-            System.out.println("SQLException:" + e.getMessage());
-            System.out.println("SQLState: " + e.getSQLState());
-            System.out.println("VendorError: " + e.getErrorCode());
-        }*/
-
     }
 
     @Override
@@ -122,6 +92,7 @@ public class MyServlet extends HttpServlet {
 
         calculations.calcPortfolioReturn("current");
         calculations.calcCorrelations("current");
+        calculations.calcPortfolioVolatility("current");
 
 
 

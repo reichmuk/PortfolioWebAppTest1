@@ -1,6 +1,8 @@
 package domain;
 import java.util.ArrayList;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 import persistance.SqlTable;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
@@ -84,10 +86,10 @@ public class Calculations {
                 float weight = sqlTable.getPortfolioWeight(value,portfolio);
                 float instrumentReturn = sqlTable.getMetricSummaryValue(value,"avgSimpleReturn");
                 portfolioReturn= portfolioReturn+(weight*instrumentReturn);
-                System.out.println(weight*instrumentReturn);
             }
         }
-        System.out.println("Der Portfolioreturn betraegt: "+portfolioReturn);
+        sqlTable.insertMetricSummary("PORTFOLIO","portfolioReturn",portfolioReturn);
+        //System.out.println("Der Portfolioreturn betraegt: "+portfolioReturn);
     }
 
     public int countPortfolioInstruments(String portfolio){
@@ -105,16 +107,158 @@ public class Calculations {
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
         float portfolioVolatility = 0;
         int countInstruments = countPortfolioInstruments(portfolio);
-        float weights[] = new float[countInstruments];
-        float varianceCovarianceMatrix[][] = new float[countInstruments][countInstruments];
+        double weights[] = new double[countInstruments];
+        double varianceCovarianceMatrix[][] = new double[countInstruments][countInstruments];
+        int counter1 = 0;
+        int counter2 = 0;
 
-        for (String value : tickerList){
-            int counter = 0;
-            if(value!="PORTFOLIO"){
-                float weight = sqlTable.getPortfolioWeight(value, portfolio);
-                weights[counter] = weight;
-                counter++;
-            }
+        //write the weights into weights[]
+        for (String ticker : tickerList){
+            double weight = (double) sqlTable.getPortfolioWeight(ticker, portfolio);
+            weights[counter1] = weight;
+            counter1++;
         }
+        counter1 = 0;
+
+        //Print Weights
+        for(int i = 0; i<tickerList.size();i++){
+            System.out.println(weights[i]);
+        }
+
+        //write covariances into varianceCovarainceMatrix[][]
+        for(String ticker : tickerList){
+            float stdev1 = sqlTable.getMetricSummaryValue(ticker,"standardDeviation");
+
+            for (String ticker2 : tickerList){
+                float stdev2 = sqlTable.getMetricSummaryValue(ticker2,"standardDeviation");
+                String correlationString = "Correl-"+ticker+"-"+ticker2;
+                float correlation = sqlTable.getMetricSummaryValue(ticker,correlationString);
+                double varianceCovariance = (double) stdev1*stdev2*correlation;
+                varianceCovarianceMatrix[counter1][counter2]=varianceCovariance;
+                counter1++;
+            }
+            counter1=0;
+            counter2++;
+        }
+        counter2 = 0;
+
+        /*
+        for(int i = 0; i<tickerList.size();i++){
+            for(int j = 0; j<tickerList.size();j++){
+                System.out.print(varianceCovarianceMatrix[i][j]+"     ");
+            }
+            System.out.println();
+        }
+         */
+
+        RealMatrix matrixWeightColumn = MatrixUtils.createColumnRealMatrix(weights);
+        RealMatrix matrixWeightRow = MatrixUtils.createRowRealMatrix(weights);
+        RealMatrix matrixVarianceCovariance = MatrixUtils.createRealMatrix(varianceCovarianceMatrix);
+        RealMatrix actual1 = matrixWeightRow.multiply(matrixVarianceCovariance).multiply(matrixWeightColumn);
+        portfolioVolatility = (float) actual1.getEntry(0,0);
+        sqlTable.insertMetricSummary("PORTFOLIO","portfolioVolatility",portfolioVolatility);
     }
+
+    public void calcOptimalPortfolio(String portfolio,double condition){
+        String newPortfolio = "";
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+        int countInstruments = countPortfolioInstruments(portfolio);
+        int matrixSize = countInstruments+2;
+        double lagrangeMatrix[][] = new double[matrixSize][matrixSize];
+        double conditions[] = new double[matrixSize];
+        int counter1 = 0;
+        int counter2 = 0;
+        int counter3 = 0;
+
+        if(condition==0){
+            newPortfolio="minRisk";
+        }else {
+            newPortfolio="targetReturn";
+        }
+
+        //write covariances into minRiskMatrix[][]
+        for(String ticker : tickerList){
+            float stdev1 = sqlTable.getMetricSummaryValue(ticker,"standardDeviation");
+
+            for (String ticker2 : tickerList){
+                float stdev2 = sqlTable.getMetricSummaryValue(ticker2,"standardDeviation");
+                String correlationString = "Correl-"+ticker+"-"+ticker2;
+                float correlation = sqlTable.getMetricSummaryValue(ticker,correlationString);
+                double varianceCovariance = (double) stdev1*stdev2*correlation;
+                lagrangeMatrix[counter1][counter2]=varianceCovariance;
+                counter1++;
+            }
+            counter1=0;
+            counter2++;
+        }
+
+        //write returns into minRiskMatrix[][]
+        counter1 = 0;
+        counter2 = countInstruments;
+        counter3 = countInstruments+1;
+
+        for(String ticker : tickerList){
+            double simpleReturn = (double) sqlTable.getMetricSummaryValue(ticker,"avgSimpleReturn");
+            lagrangeMatrix[counter1][counter2] = simpleReturn;
+            lagrangeMatrix[counter2][counter1] = simpleReturn;
+            lagrangeMatrix[counter1][counter3] = (double) 1;
+            lagrangeMatrix[counter3][counter1] = (double) 1;
+            counter1++;
+        }
+        lagrangeMatrix[counter2][counter2] = 0;
+        lagrangeMatrix[counter2][counter3] = 0;
+        lagrangeMatrix[counter3][counter2] = 0;
+        lagrangeMatrix[counter3][counter3] = 0;
+
+        //write values into conditions[]
+        for(int i = 0; i<countInstruments; i++){
+            conditions[i] = 0;
+        }
+        conditions[countInstruments] = condition;
+        conditions[countInstruments+1]=1;
+
+        RealMatrix matrixConditions = MatrixUtils.createColumnRealMatrix(conditions);
+        RealMatrix matrixLagrange = MatrixUtils.createRealMatrix(lagrangeMatrix);
+        RealMatrix inverseMatrixLagrange = MatrixUtils.inverse(matrixLagrange);
+        RealMatrix actual = inverseMatrixLagrange.multiply(matrixConditions);
+
+        //write optimal weights in DB (portfolio)
+        /*
+        for(int i = 0; i<5;i++){
+            System.out.println(actual.getEntry(i,0));
+        }
+
+         */
+        counter1=0;
+        for(String ticker : tickerList){
+            float newWeitght = (float) actual.getEntry(counter1,0);
+            sqlTable.insertPortfolio(ticker,newPortfolio,newWeitght);
+            counter1++;
+        }
+
+
+
+        /*
+        for(int i = 0;i<conditions.length;i++){
+            System.out.println(conditions[i]+";");
+        }
+         */
+
+
+        /*
+        for(int i = 0; i<lagrangeMatrix.length; i++){
+            for(int j = 0; j<lagrangeMatrix.length; j++){
+                System.out.print(lagrangeMatrix[i][j]+";");
+            }
+            System.out.println();
+        }
+         */
+
+
+    }
+
+
+
+
+
 }
