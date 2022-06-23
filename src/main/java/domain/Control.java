@@ -1,18 +1,15 @@
 package domain;
-
 import persistance.SqlTable;
-
 
 /**
  * PortfolioWebApp - Main Class
  * Contains GETTER and SETTER for each class.
- *
  * @author Kevin Reichmuth
- * @version 28.05.2022
+ * @version 31.08.2022
  */
 public class Control {
 
-    // Declare variables (classes)
+    //Declare variables (classes)
     private static SqlTable sqlTable;
     private static Calculations calculations;
     private static YahooApi yahooApi;

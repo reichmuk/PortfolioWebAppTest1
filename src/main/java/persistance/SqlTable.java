@@ -2,12 +2,23 @@ package persistance;
 import java.sql.*;
 import java.util.ArrayList;
 
+/**
+ * The class SqlTable grants the access to the MySQL-DB.
+ * Data from the MySQL-tables can be accessed and manipulated.
+ * @author Kevin Reichmuth
+ * @version 31.08.2022
+ */
 public class SqlTable {
 
-
+    /**
+     * CONSTRUCTOR
+     */
     public SqlTable(){
     }
 
+    /**
+     * Method that performs the connection to the MySQL-DB "instrumentDB".
+     */
     public Connection getConnection(){
         Connection connection = null;
         String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
@@ -21,6 +32,12 @@ public class SqlTable {
         return connection;
     }
 
+    /**
+     * Method to store a price in the MySQL-DB.
+     * @param ticker The ticker of the instrument.
+     * @param timeStamp The timestamp (date) of the price
+     * @param price the price of the instrument
+     */
     public void insertPrice(String ticker, int timeStamp, float price){
         String tickerString = "\""+ticker+"\"";
         Connection connection = getConnection();
@@ -33,6 +50,13 @@ public class SqlTable {
         }
     }
 
+    /**
+     * Method to get a list with all prices or a list of all timestamps (attached to the price) of a dedicated
+     * instrument.
+     * @param column The column is either the "price" or the "time_stamp"
+     * @param ticker The ticker of the instrument
+     * @return returns the priceList or timeStampList
+     */
     public ArrayList<Float> getPriceList(String column, String ticker){
         String tickerString = "\""+ticker+"\"";
         ArrayList<Float> priceList = new ArrayList<Float>();
@@ -56,6 +80,13 @@ public class SqlTable {
         } else {return timeStampList;}
     }
 
+    /**
+     * Method to store a metric (simpleReturn or steadyReturn) in the MySQL-DB table "metrics".
+     * @param ticker The ticker of the instrument.
+     * @param timeStamp The timeStamp of the respective metric
+     * @param metric The respective metric (simpleReturn or steadyReturn)
+     * @param value The metric-value of the respective ticker on the given timeStamp (date)
+     */
     public void insertMetric(String ticker, int timeStamp, String metric, float value){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
@@ -69,6 +100,12 @@ public class SqlTable {
         }
     }
 
+    /**
+     * The method returns the respective metric-values of the entire Metric-List from the MySQL-DB.
+     * @param metric The respective metric (simpleReturn or steadyReturn)
+     * @param ticker The ticker of the instrument
+     * @return returns the metricList
+     */
     public ArrayList<Float> getMetricList(String metric, String ticker){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
@@ -88,6 +125,9 @@ public class SqlTable {
         return metricList;
     }
 
+    /**
+     * To be checked and removed
+     */
     public ArrayList<Double> getMetricListDouble(String metric, String ticker){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
@@ -107,8 +147,13 @@ public class SqlTable {
         return metricList;
     }
 
-
-
+    /**
+     * Method to store a summary-metric (avgSimpleReturn, avgSteadyReturn, standardDeviation, Correlation) in the
+     * MySQL-DB table "metrics_summary".
+     * @param ticker The ticker of the instrument
+     * @param metric The respective metric (avgSimpleReturn, avgSteadyReturn, standardDeviation, Correlation)
+     * @param value The metric-value of the respective ticker
+     */
     public void insertMetricSummary(String ticker, String metric, float value){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
@@ -122,8 +167,12 @@ public class SqlTable {
         }
     }
 
-
-
+    /**
+     * Method to add an instrument to the portfolio.
+     * @param ticker The ticker of the instrument
+     * @param portfolio The portfolio (current, minRisk, targetReturn)
+     * @param weight The respective weight of the instrument in the portfolio
+     */
     public void insertPortfolio(String ticker, String portfolio, float weight){
         String tickerString = "\""+ticker+"\"";
         String portfolioString = "\""+portfolio+"\"";
@@ -137,6 +186,12 @@ public class SqlTable {
         }
     }
 
+    /**
+     * Method to get a value from the metrics_summary table.
+     * @param ticker The ticker of the instrument
+     * @param metric The respective metric (avgSimpleReturn, avgSteadyReturn, standardDeviation, Correlation)
+     * @return returns the metricSummaryValue
+     */
     public float getMetricSummaryValue(String ticker, String metric){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
@@ -156,6 +211,11 @@ public class SqlTable {
         return metricSummaryValue;
     }
 
+    /**
+     * Method that returns the ticker of a given instrument.
+     * @param instrument The name of the instrument
+     * @return returns instrument ticker
+     */
     public String getInstrumentTicker(String instrument){
         String instrumentName = "\""+instrument+"\"";
         String ticker = "";
@@ -175,7 +235,12 @@ public class SqlTable {
 
     }
 
-
+    /**
+     * Method that returns the weight of an instrument from a given portfolio.
+     * @param ticker The ticker of the instrument
+     * @param portfolio The portfolio (current, minRisk, targetReturn)
+     * @return returns the portfolioWeight
+     */
     public float getPortfolioWeight(String ticker, String portfolio){
         String tickerString = "\""+ticker+"\"";
         String portfolioString = "\""+portfolio+"\"";
@@ -195,6 +260,11 @@ public class SqlTable {
         return portfolioWeight;
     }
 
+    /**
+     * Method that returns a list with all tickers of a given portfolio.
+     * @param portfolio The portfolio (current, minRisk, targetReturn)
+     * @return returns the tickerList
+     */
     public ArrayList<String> getPortfolioTickers(String portfolio){
         String portfolioString = "\""+portfolio+"\"";
         ArrayList<String> tickerList = new ArrayList<String>();
@@ -213,9 +283,10 @@ public class SqlTable {
         return tickerList;
     }
 
-
-
-
+    /**
+     * Method that resets a table in the MySQL-DB.
+     * @param table The table to be reset
+     */
     public void resetTable(String table){
         Connection connection = getConnection();
         String sqlCommand = "TRUNCATE TABLE " +table+";";
@@ -226,37 +297,5 @@ public class SqlTable {
             e.printStackTrace();
         }
     }
-
-
-    public void createSqlTable(String ticker){
-        String tableName = "Prices"+ ticker;
-        String sqlCommand = "CREATE TABLE "+tableName+"(instrument_id INT, date_id INT, price FLOAT(10), PRIMARY KEY (instrument_id,date_id))";
-        Connection connection = getConnection();
-                try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
-    public int getInstrumentID(String ticker){
-        int instrumentID=0;
-        Connection connection = getConnection();
-        String tickerString = "\""+ticker+"\"";
-        String sqlCommand = "SELECT * from instruments WHERE ticker ="+tickerString;
-
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                instrumentID=Integer.parseInt(resultSet.getString("instrument_id"));
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return instrumentID;
-    }
-
 
 }

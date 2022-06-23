@@ -7,19 +7,29 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-
+/**
+ * The class YahooAPI performs the price-data-import from Yahoo Finance API (https://www.yahoofinanceapi.com/) and
+ * stores the data in the MySQL-DB.
+ * @author Kevin Reichmuth
+ * @version 31.08.2022
+ */
 public class YahooApi {
 
+    //Declare variables
     private SqlTable sqlTable;
 
+    /**
+     * CONSTRUCTOR
+     */
     public YahooApi(){
         sqlTable = Control.getSqlTable();
     }
 
+    /**
+     * Method that imports the historical prices from the respective instrument.
+     * @param ticker The ticker of the instrument.
+     */
     public void priceImport(String ticker){
-
-        //SqlTable sqlTable = new SqlTable();
-        //int id = sqlTable.getInstrumentID(ticker);
         String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=5d&symbols="+ticker;
 
         //Connect to Yahoo API
@@ -38,7 +48,7 @@ public class YahooApi {
             JSONArray jsonArrayDate = (JSONArray) jsonObject.getJSONObject(ticker).get("timestamp");
             JSONArray jsonArrayPrice = (JSONArray) jsonObject.getJSONObject(ticker).get("close");
 
-            //Upload data to mySQL
+            //Upload data to MySQL-DB
             for(int i = 0; i<jsonArrayDate.length();i++){
                 String stringTimeStamp = jsonArrayDate.get(i).toString();
                 int timestamp = Integer.parseInt(stringTimeStamp);
@@ -50,6 +60,4 @@ public class YahooApi {
             e.printStackTrace();
         }
     }
-
-
 }

@@ -93,46 +93,7 @@ public class MyServlet extends HttpServlet {
         calculations.calcPortfolioReturn("current");
         calculations.calcCorrelations("current");
         calculations.calcPortfolioVolatility("current");
+        calculations.calcOptimalPortfolio("current",0);
 
-
-
-        /*
-        String instrument1 = request.getParameter("instrument1").toString();
-        String instrument2 = request.getParameter("instrument2").toString();
-        String instrument3 = request.getParameter("instrument3").toString();
-        String quantity1 = request.getParameter("quantity1").toString();
-        String quantity2 = request.getParameter("quantity2").toString();
-        String quantity3 = request.getParameter("quantity3").toString();
-
-        String tickerInstrument1 = sqlTable.getInstrumentTicker(instrument1);
-        String tickerInstrument2 = sqlTable.getInstrumentTicker(instrument2);
-        String tickerInstrument3 = sqlTable.getInstrumentTicker(instrument3);
-
-        sqlTable.insertPortfolio(tickerInstrument1,"current", 0.4f);
-        sqlTable.insertPortfolio(tickerInstrument2,"current", 0.35f);
-        sqlTable.insertPortfolio(tickerInstrument3,"current",0.25f);
-
-        YahooApi yahooApi = Control.getYahooApi();
-        yahooApi.priceImport(tickerInstrument1);
-        yahooApi.priceImport(tickerInstrument2);
-        yahooApi.priceImport(tickerInstrument3);
-
-        calculations.calcSingleReturn(tickerInstrument1);
-        calculations.calcSingleReturn(tickerInstrument2);
-        calculations.calcSingleReturn(tickerInstrument3);
-        calculations.calcMetricSummary(tickerInstrument1);
-        calculations.calcMetricSummary(tickerInstrument2);
-        calculations.calcMetricSummary(tickerInstrument3);
-
-        calculations.calcPortfolioReturn("current");
-        calculations.calcCorrelations("current");
-         */
-
-        /*
-        PrintWriter out = response.getWriter();
-        out.println(instrument1);
-        out.println(instrument2);
-        out.println(instrument3);
-         */
     }
 }
