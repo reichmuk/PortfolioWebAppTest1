@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import persistance.SqlTable;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
@@ -37,28 +39,24 @@ public class Calculations {
         float avgSimpleReturns=0;
         float avgSteadyReturns=0;
         float standardDeviation = 0;
-        for(float value : simpleReturns){
-            avgSimpleReturns = avgSimpleReturns+value;
-
-        }
-        avgSimpleReturns = avgSimpleReturns/simpleReturns.size();
-        sqlTable.insertMetricSummary(ticker,"avgSimpleReturn",avgSimpleReturns);
 
         for(float value : steadyReturns){
             avgSteadyReturns = avgSteadyReturns+value;
 
         }
         avgSteadyReturns = avgSteadyReturns/steadyReturns.size();
+        avgSimpleReturns = (float) (Math.exp(avgSteadyReturns))-1;
         sqlTable.insertMetricSummary(ticker,"avgSteadyReturn",avgSteadyReturns);
+        sqlTable.insertMetricSummary(ticker,"avgSimpleReturn",avgSimpleReturns);
 
-        for(float value : steadyReturns){
-            float calc = (value-avgSteadyReturns);
-            calc = (float) Math.pow(calc,2);
-            standardDeviation = standardDeviation+calc;
+        DescriptiveStatistics stats = new DescriptiveStatistics();
+        for(float steadyReturn : steadyReturns){
+            double value = (double)steadyReturn;
+            stats.addValue(value);
         }
-        standardDeviation = standardDeviation/(steadyReturns.size()-1);
-        standardDeviation = (float) Math.sqrt(standardDeviation);
+        standardDeviation = (float) stats.getStandardDeviation();
         sqlTable.insertMetricSummary(ticker,"standardDeviation",standardDeviation);
+
     }
 
     public void calcCorrelations(String portfolio){
