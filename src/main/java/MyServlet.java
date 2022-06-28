@@ -58,8 +58,8 @@ public class MyServlet extends HttpServlet {
         YahooApi yahooApi = Control.getYahooApi();
 
         ArrayList<String> instrumentList = new ArrayList<String>();
-        ArrayList<Float> quantityList = new ArrayList<Float>();
-        float totalQuantity = 0;
+        ArrayList<Integer> quantityList = new ArrayList<Integer>();
+        double totalQuantity = 0;
 
         for(int i =1; i<4;i++){
             String instrument = "instrument"+i;
@@ -70,19 +70,19 @@ public class MyServlet extends HttpServlet {
             if(instrumentValue.equals("Select Instrument")){
             }else{
                 instrumentList.add(instrumentValue);
-                quantityList.add(Float.parseFloat(quantityValue));
+                quantityList.add(Integer.parseInt(quantityValue));
             }
         }
 
-        for(float value : quantityList){
+        for(double value : quantityList){
             totalQuantity = totalQuantity+value;
         }
 
 
         for(int i = 0; i<instrumentList.size(); i++){
             String instrument = instrumentList.get(i);
-            float quantity = quantityList.get(i);
-            float weight = quantity/totalQuantity;
+            int quantity = quantityList.get(i);
+            double weight = quantity/totalQuantity;
             String ticker = sqlTable.getInstrumentTicker(instrument);
             sqlTable.insertPortfolio(ticker,"current", weight);
             yahooApi.priceImport(ticker);

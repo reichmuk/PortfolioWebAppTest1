@@ -38,7 +38,7 @@ public class SqlTable {
      * @param timeStamp The timestamp (date) of the price
      * @param price the price of the instrument
      */
-    public void insertPrice(String ticker, int timeStamp, float price){
+    public void insertPrice(String ticker, int timeStamp, double price){
         String tickerString = "\""+ticker+"\"";
         Connection connection = getConnection();
         String sqlCommand = "INSERT INTO prices VALUES("+tickerString+","+timeStamp+","+price+");";
@@ -57,19 +57,19 @@ public class SqlTable {
      * @param ticker The ticker of the instrument
      * @return returns the priceList or timeStampList
      */
-    public ArrayList<Float> getPriceList(String column, String ticker){
+    public ArrayList<Double> getPriceList(String column, String ticker){
         String tickerString = "\""+ticker+"\"";
-        ArrayList<Float> priceList = new ArrayList<Float>();
-        ArrayList<Float> timeStampList = new ArrayList<Float>();
+        ArrayList<Double> priceList = new ArrayList<Double>();
+        ArrayList<Double> timeStampList = new ArrayList<Double>();
         Connection connection = getConnection();
         String sqlCommand = "SELECT time_stamp, price from prices where ticker="+tickerString+" order by time_stamp ASC;";
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                float price = Float.parseFloat(resultSet.getString("price"));
+                double price = Double.parseDouble(resultSet.getString("price"));
                 priceList.add(price);
-                float timeStamp = Float.parseFloat(resultSet.getString("time_stamp"));
+                double timeStamp = Double.parseDouble(resultSet.getString("time_stamp"));
                 timeStampList.add(timeStamp);
             }
         }catch (SQLException e){
@@ -87,7 +87,7 @@ public class SqlTable {
      * @param metric The respective metric (simpleReturn or steadyReturn)
      * @param value The metric-value of the respective ticker on the given timeStamp (date)
      */
-    public void insertMetric(String ticker, int timeStamp, String metric, float value){
+    public void insertMetric(String ticker, int timeStamp, String metric, double value){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
         Connection connection = getConnection();
@@ -106,29 +106,7 @@ public class SqlTable {
      * @param ticker The ticker of the instrument
      * @return returns the metricList
      */
-    public ArrayList<Float> getMetricList(String metric, String ticker){
-        String tickerString = "\""+ticker+"\"";
-        String metricString = "\""+metric+"\"";
-        ArrayList<Float> metricList = new ArrayList<Float>();
-        Connection connection = getConnection();
-        String sqlCommand = "SELECT value from metrics where ticker="+tickerString+" && metric ="+metricString+";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                float value = Float.parseFloat(resultSet.getString("value"));
-                metricList.add(value);
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return metricList;
-    }
-
-    /**
-     * To be checked and removed
-     */
-    public ArrayList<Double> getMetricListDouble(String metric, String ticker){
+    public ArrayList<Double> getMetricList(String metric, String ticker){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
         ArrayList<Double> metricList = new ArrayList<Double>();
@@ -154,7 +132,7 @@ public class SqlTable {
      * @param metric The respective metric (avgSimpleReturn, avgSteadyReturn, standardDeviation, Correlation)
      * @param value The metric-value of the respective ticker
      */
-    public void insertMetricSummary(String ticker, String metric, float value){
+    public void insertMetricSummary(String ticker, String metric, double value){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
         Connection connection = getConnection();
@@ -173,7 +151,7 @@ public class SqlTable {
      * @param portfolio The portfolio (current, minRisk, targetReturn)
      * @param weight The respective weight of the instrument in the portfolio
      */
-    public void insertPortfolio(String ticker, String portfolio, float weight){
+    public void insertPortfolio(String ticker, String portfolio, double weight){
         String tickerString = "\""+ticker+"\"";
         String portfolioString = "\""+portfolio+"\"";
         Connection connection = getConnection();
@@ -192,17 +170,17 @@ public class SqlTable {
      * @param metric The respective metric (avgSimpleReturn, avgSteadyReturn, standardDeviation, Correlation)
      * @return returns the metricSummaryValue
      */
-    public float getMetricSummaryValue(String ticker, String metric){
+    public double getMetricSummaryValue(String ticker, String metric){
         String tickerString = "\""+ticker+"\"";
         String metricString = "\""+metric+"\"";
-        float metricSummaryValue = 0;
+        double metricSummaryValue = 0;
         Connection connection = getConnection();
         String sqlCommand = "SELECT value from metrics_summary where ticker="+tickerString+" && metric ="+metricString+";";
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                float value = Float.parseFloat(resultSet.getString("value"));
+                double value = Double.parseDouble(resultSet.getString("value"));
                 metricSummaryValue = value;
             }
         }catch (SQLException e){
@@ -241,17 +219,17 @@ public class SqlTable {
      * @param portfolio The portfolio (current, minRisk, targetReturn)
      * @return returns the portfolioWeight
      */
-    public float getPortfolioWeight(String ticker, String portfolio){
+    public double getPortfolioWeight(String ticker, String portfolio){
         String tickerString = "\""+ticker+"\"";
         String portfolioString = "\""+portfolio+"\"";
-        float portfolioWeight = 0;
+        double portfolioWeight = 0;
         Connection connection = getConnection();
         String sqlCommand = "SELECT weight from portfolio where ticker="+tickerString+" && portfolio ="+portfolioString+";";
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                float value = Float.parseFloat(resultSet.getString("weight"));
+                double value = Double.parseDouble(resultSet.getString("weight"));
                 portfolioWeight = value;
             }
         }catch (SQLException e){

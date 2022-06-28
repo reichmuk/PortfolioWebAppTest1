@@ -31,14 +31,14 @@ public class Calculations {
      * @param ticker The ticker of the instrument.
      */
     public void calcSingleReturn(String ticker){
-        ArrayList<Float> prices = sqlTable.getPriceList("price",ticker);
-        ArrayList<Float> timeStamps = sqlTable.getPriceList("time_stamp",ticker);
+        ArrayList<Double> prices = sqlTable.getPriceList("price",ticker);
+        ArrayList<Double> timeStamps = sqlTable.getPriceList("time_stamp",ticker);
 
         for(int i = 0; i< prices.size(); i++){
             if(i==0){} else{
-                float simpleReturn = (prices.get(i) - prices.get(i-1)) / prices.get(i-1);
-                float steadyReturn = (float) Math.log(1+simpleReturn);
-                float timeStamp = timeStamps.get(i);
+                double simpleReturn = (prices.get(i) - prices.get(i-1)) / prices.get(i-1);
+                double steadyReturn = Math.log(1+simpleReturn);
+                double timeStamp = timeStamps.get(i);
                 int timeStampInt = (int) timeStamp;
                 sqlTable.insertMetric(ticker,timeStampInt,"simpleReturn",simpleReturn);
                 sqlTable.insertMetric(ticker,timeStampInt,"steadyReturn",steadyReturn);
@@ -52,31 +52,30 @@ public class Calculations {
      * @param ticker The ticker of the instrument.
      */
     public void calcMetricSummary(String ticker){
-        ArrayList<Float> simpleReturns = sqlTable.getMetricList("simpleReturn", ticker);
-        ArrayList<Float> steadyReturns = sqlTable.getMetricList("steadyReturn",ticker);
-        float avgSimpleReturns=0;
-        float avgSteadyReturns=0;
-        float standardDeviation = 0;
+        ArrayList<Double> simpleReturns = sqlTable.getMetricList("simpleReturn", ticker);
+        ArrayList<Double> steadyReturns = sqlTable.getMetricList("steadyReturn",ticker);
+        double avgSimpleReturns=0;
+        double avgSteadyReturns=0;
+        double standardDeviation = 0;
 
-        for(float value : steadyReturns){
+        for(double value : steadyReturns){
             avgSteadyReturns = avgSteadyReturns+value;
         }
 
         avgSteadyReturns = avgSteadyReturns/steadyReturns.size();
-        avgSimpleReturns = (float) (Math.exp(avgSteadyReturns))-1;
+        avgSimpleReturns = (Math.exp(avgSteadyReturns))-1;
         sqlTable.insertMetricSummary(ticker,"avgSteadyReturn",avgSteadyReturns);
         sqlTable.insertMetricSummary(ticker,"avgSimpleReturn",avgSimpleReturns);
 
         DescriptiveStatistics stats = new DescriptiveStatistics();
 
-        for(float steadyReturn : steadyReturns){
-            double value = (double)steadyReturn;
+        for(double steadyReturn : steadyReturns){
+            double value = steadyReturn;
             stats.addValue(value);
         }
 
-        standardDeviation = (float) stats.getStandardDeviation();
+        standardDeviation = stats.getStandardDeviation();
         sqlTable.insertMetricSummary(ticker,"standardDeviation",standardDeviation);
-
     }
 
     /**
@@ -90,13 +89,12 @@ public class Calculations {
         for(String ticker1 : tickerList){
             for(String ticker2 : tickerList){
                 String metric = "Correl-"+ticker1+"-"+ticker2;
-                ArrayList<Double> returnList1 = sqlTable.getMetricListDouble("steadyReturn",ticker1);
-                ArrayList<Double> returnList2 = sqlTable.getMetricListDouble("steadyReturn",ticker2);
+                ArrayList<Double> returnList1 = sqlTable.getMetricList("steadyReturn",ticker1);
+                ArrayList<Double> returnList2 = sqlTable.getMetricList("steadyReturn",ticker2);
                 double[] list1 = ArrayUtils.toPrimitive(returnList1.toArray(new Double[0]));
                 double[] list2 = ArrayUtils.toPrimitive(returnList2.toArray(new Double[0]));
                 double correlation = new PearsonsCorrelation().correlation(list1,list2);
-                float correlationFloat = (float) correlation;
-                sqlTable.insertMetricSummary(ticker1,metric,correlationFloat);
+                sqlTable.insertMetricSummary(ticker1,metric,correlation);
             }
         }
     }
@@ -108,18 +106,12 @@ public class Calculations {
      */
     public void calcPortfolioReturn(String portfolio){
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
-        float portfolioReturn = 0;
+        double portfolioReturn = 0;
 
         for(String value:tickerList){
-            float weight = sqlTable.getPortfolioWeight(value,portfolio);
-            float instrumentReturn = sqlTable.getMetricSummaryValue(value,"avgSimpleReturn");
+            double weight = sqlTable.getPortfolioWeight(value,portfolio);
+            double instrumentReturn = sqlTable.getMetricSummaryValue(value,"avgSimpleReturn");
             portfolioReturn= portfolioReturn+(weight*instrumentReturn);
-            /*if(value!="PORTFOLIO"){
-                float weight = sqlTable.getPortfolioWeight(value,portfolio);
-                float instrumentReturn = sqlTable.getMetricSummaryValue(value,"avgSimpleReturn");
-                portfolioReturn= portfolioReturn+(weight*instrumentReturn);
-            }
-             */
         }
 
         sqlTable.insertMetricSummary("PORTFOLIO","portfolioReturn",portfolioReturn);
@@ -132,13 +124,11 @@ public class Calculations {
     public int countPortfolioInstruments(String portfolio){
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
         int counter = 0;
+
         for(String value : tickerList){
             counter++;
-            /*if(value!="PORTFOLIO"){
-                counter++;
-            }
-             */
         }
+
         return counter;
     }
 
@@ -149,7 +139,7 @@ public class Calculations {
      */
     public void calcPortfolioVolatility(String portfolio){
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
-        float portfolioVolatility = 0;
+        double portfolioVolatility = 0;
         int countInstruments = countPortfolioInstruments(portfolio);
         double weights[] = new double[countInstruments];
         double varianceCovarianceMatrix[][] = new double[countInstruments][countInstruments];
@@ -158,7 +148,7 @@ public class Calculations {
 
         //Write the weights into weights[]
         for (String ticker : tickerList){
-            double weight = (double) sqlTable.getPortfolioWeight(ticker, portfolio);
+            double weight = sqlTable.getPortfolioWeight(ticker, portfolio);
             weights[counter1] = weight;
             counter1++;
         }
@@ -166,28 +156,27 @@ public class Calculations {
 
         //Write covariances into varianceCovarianceMatrix[][]
         for(String ticker : tickerList){
-            float stdev1 = sqlTable.getMetricSummaryValue(ticker,"standardDeviation");
+            double stdev1 = sqlTable.getMetricSummaryValue(ticker,"standardDeviation");
 
             for (String ticker2 : tickerList){
-                float stdev2 = sqlTable.getMetricSummaryValue(ticker2,"standardDeviation");
+                double stdev2 = sqlTable.getMetricSummaryValue(ticker2,"standardDeviation");
                 String correlationString = "Correl-"+ticker+"-"+ticker2;
-                float correlation = sqlTable.getMetricSummaryValue(ticker,correlationString);
-                double varianceCovariance = (double) stdev1*stdev2*correlation;
+                double correlation = sqlTable.getMetricSummaryValue(ticker,correlationString);
+                double varianceCovariance = stdev1*stdev2*correlation;
                 varianceCovarianceMatrix[counter1][counter2]=varianceCovariance;
                 counter1++;
             }
             counter1=0;
             counter2++;
         }
-        //counter2 = 0;
 
         //Calculate the volatility with matrices
         RealMatrix matrixWeightColumn = MatrixUtils.createColumnRealMatrix(weights);
         RealMatrix matrixWeightRow = MatrixUtils.createRowRealMatrix(weights);
         RealMatrix matrixVarianceCovariance = MatrixUtils.createRealMatrix(varianceCovarianceMatrix);
         RealMatrix actual1 = matrixWeightRow.multiply(matrixVarianceCovariance).multiply(matrixWeightColumn);
-        portfolioVolatility = (float) actual1.getEntry(0,0);
-        portfolioVolatility = (float) Math.sqrt(portfolioVolatility);
+        portfolioVolatility = actual1.getEntry(0,0);
+        portfolioVolatility = Math.sqrt(portfolioVolatility);
         sqlTable.insertMetricSummary("PORTFOLIO","portfolioVolatility",portfolioVolatility);
     }
 
@@ -216,13 +205,13 @@ public class Calculations {
 
         //Write covariances into lagrangeMatrix[][]
         for(String ticker : tickerList){
-            float stdev1 = sqlTable.getMetricSummaryValue(ticker,"standardDeviation");
+            double stdev1 = sqlTable.getMetricSummaryValue(ticker,"standardDeviation");
 
             for (String ticker2 : tickerList){
-                float stdev2 = sqlTable.getMetricSummaryValue(ticker2,"standardDeviation");
+                double stdev2 = sqlTable.getMetricSummaryValue(ticker2,"standardDeviation");
                 String correlationString = "Correl-"+ticker+"-"+ticker2;
-                float correlation = sqlTable.getMetricSummaryValue(ticker,correlationString);
-                double varianceCovariance = (double) stdev1*stdev2*correlation;
+                double correlation = sqlTable.getMetricSummaryValue(ticker,correlationString);
+                double varianceCovariance = stdev1*stdev2*correlation;
                 lagrangeMatrix[counter1][counter2]=varianceCovariance;
                 counter1++;
             }
@@ -237,11 +226,11 @@ public class Calculations {
         counter3 = countInstruments+1;
 
         for(String ticker : tickerList){
-            double simpleReturn = (double) sqlTable.getMetricSummaryValue(ticker,"avgSimpleReturn");
+            double simpleReturn = sqlTable.getMetricSummaryValue(ticker,"avgSimpleReturn");
             lagrangeMatrix[counter1][counter2] = simpleReturn;
             lagrangeMatrix[counter2][counter1] = simpleReturn;
-            lagrangeMatrix[counter1][counter3] = (double) 1;
-            lagrangeMatrix[counter3][counter1] = (double) 1;
+            lagrangeMatrix[counter1][counter3] = 1;
+            lagrangeMatrix[counter3][counter1] = 1;
             counter1++;
         }
         lagrangeMatrix[counter2][counter2] = 0;
@@ -265,7 +254,7 @@ public class Calculations {
         //Store new weights in DB
         counter1=0;
         for(String ticker : tickerList){
-            float newWeitght = (float) actual.getEntry(counter1,0);
+            double newWeitght = actual.getEntry(counter1,0);
             sqlTable.insertPortfolio(ticker,newPortfolio,newWeitght);
             counter1++;
         }

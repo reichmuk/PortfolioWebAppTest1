@@ -53,7 +53,7 @@ public class YahooApi {
                 String stringTimeStamp = jsonArrayDate.get(i).toString();
                 int timestamp = Integer.parseInt(stringTimeStamp);
                 String stringPrice = jsonArrayPrice.get(i).toString();
-                float price = Float.parseFloat(stringPrice);
+                double price = Double.parseDouble(stringPrice);
                 sqlTable.insertPrice(ticker,timestamp,price);
             }
         }catch (Exception e){
