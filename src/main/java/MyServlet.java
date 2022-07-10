@@ -59,7 +59,7 @@ public class MyServlet extends HttpServlet {
 
         ArrayList<String> instrumentList = new ArrayList<String>();
         ArrayList<Integer> quantityList = new ArrayList<Integer>();
-        double totalQuantity = 0;
+        double portfolioValue = 0;
 
         for(int i =1; i<4;i++){
             String instrument = "instrument"+i;
@@ -74,22 +74,25 @@ public class MyServlet extends HttpServlet {
             }
         }
 
-        for(double value : quantityList){
-            totalQuantity = totalQuantity+value;
+        for(int i = 0; i<instrumentList.size(); i++){
+            String instrument = instrumentList.get(i);
+            String ticker = sqlTable.getInstrumentTicker(instrument);
+            yahooApi.priceImport(ticker);
+            int quantity = quantityList.get(i);
+            portfolioValue = portfolioValue+(quantity*sqlTable.getLatestPrice(ticker));
         }
-
 
         for(int i = 0; i<instrumentList.size(); i++){
             String instrument = instrumentList.get(i);
-            int quantity = quantityList.get(i);
-            double weight = quantity/totalQuantity;
             String ticker = sqlTable.getInstrumentTicker(instrument);
-            sqlTable.insertPortfolio(ticker,"current", weight);
-            yahooApi.priceImport(ticker);
+            int quantity = quantityList.get(i);
+            double weight = (quantity*sqlTable.getLatestPrice(ticker))/portfolioValue;
+            sqlTable.insertPortfolio(ticker,"current",quantity,weight);
             calculations.calcSingleReturn(ticker);
             calculations.calcMetricSummary(ticker);
         }
 
+        calculations.calcPortfolioValue("current");
         calculations.calcPortfolioReturn("current");
         calculations.calcCorrelations("current");
         calculations.calcPortfolioVolatility("current");
@@ -97,7 +100,6 @@ public class MyServlet extends HttpServlet {
 
         //RequestDispatcher dispatcher = request.getRequestDispatcher("result");
         response.sendRedirect("result.jsp");
-
 
     }
 }

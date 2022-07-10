@@ -25,13 +25,32 @@ public class Calculations {
         sqlTable = Control.getSqlTable();
     }
 
+    /**
+     * Method that calculates the portfolioValue of the respective portfolio.
+     * The result is stored in the MySQL-DB "metrics_summary" table.
+     * @param portfolio The "current" portfolio.
+     */
     public void calcPortfolioValue(String portfolio){
+        double portfolioValue = 0;
+        ArrayList<String> instruments = sqlTable.getPortfolioTickers(portfolio);
 
-
+        for(String ticker:instruments){
+            double quantity = sqlTable.getPortfolioQuantity(ticker,portfolio);
+            double price = sqlTable.getLatestPrice(ticker);
+            portfolioValue = portfolioValue + (quantity*price);
+        }
+        sqlTable.insertMetricSummary("PORTFOLIO","portfolioValue",portfolioValue);
     }
 
-    public void calcInstrumentQuantity(){
-
+    /**
+     * Method that calculates the portfolioQuantity based on the give weight.
+     * @param weight The weight of the respective instrument in the portfolio.
+     * @return returns the instrumentQuantity
+     */
+    public int calcInstrumentQuantity(double weight, double price){
+        double portfolioValue = sqlTable.getPortfolioValue();
+        double instrumentQuantity = (portfolioValue*weight)/price;
+        return (int) instrumentQuantity;
     }
 
 
@@ -192,7 +211,7 @@ public class Calculations {
 
     /**
      * Method that calculates the optimal portfolio.
-     * The results (new weights) are stored in the MySQL-DB in the "portfolio" table (portfolio: minRisk or targetReturn).
+     * The results (new weights & new quantities) are stored in the MySQL-DB in the "portfolio" table (portfolio: minRisk or targetReturn).
      * @param portfolio The "current" portfolio.
      * @param condition The condition minRisk=0 or targetReturn=x.
      */
@@ -265,7 +284,9 @@ public class Calculations {
         counter1=0;
         for(String ticker : tickerList){
             double newWeitght = actual.getEntry(counter1,0);
-            sqlTable.insertPortfolio(ticker,newPortfolio,newWeitght);
+            double price = sqlTable.getLatestPrice(ticker);
+            int newQuantity = calcInstrumentQuantity(newWeitght,price);
+            sqlTable.insertPortfolio(ticker,newPortfolio,newQuantity,newWeitght);
             counter1++;
         }
     }
