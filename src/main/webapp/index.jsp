@@ -19,107 +19,49 @@
 </head>
 <body>
 
-    <div id="current_portfolio">
-    <h3>Musterportfolio:</h3>
+<%
+    //Variables
+    ResultSet rs = null;
+    Statement stm = null;
+    String query = null;
 
-        <form action="MyServlet" method="post">
-            <table>
-                <tr>
-                    <th>Titel</th>
-                    <th>Anzahl</th>
-                    <th>CCY</th>
-                    <th>Preis</th>
-                    <th>Weight %</th>
-                    <th>% Change</th>
-                </tr>
-                <tr>
-                    <td>
-                        <select name=instrument1 class="form-control" style="width: 250px;">
-                            <option inst1="-1">Select Instrument</option>
-                            <%
-                                try{
-                                    String query ="select * from instruments";
-                                    Class.forName("com.mysql.cj.jdbc.Driver");
-                                    String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-                                    String user = "root";
-                                    String password = "Blue_22!";
-                                    Connection conn = DriverManager.getConnection(url,user,password);
-                                    Statement stm = conn.createStatement();
-                                    ResultSet rs = stm.executeQuery(query);
-                                    while (rs.next()){
-                            %>
-                            <option inst1="<%=rs.getString("ticker")%>"><%=rs.getString("name")%></option>
-                            <%
-                                    }
-                                }catch (Exception ex){
-                                    ex.printStackTrace();
-                                    out.println("Error "+ex.getMessage());
-                                }
-                            %>
-                        </select>
-                    </td>
-                    <td>
-                        <input type = "text" name = "quantity1">
-                    </td>
-                    <td>
-                        <input readonly type="text" name = "ccy1">
-                    </td>
-                    <td>
-                        <input readonly type="text" name = "pric1">
-                    </td>
-                    <td>
-                        <input readonly type="text" name = "weight1">
-                    </td>
-                    <td>
-                        <input readonly type="text" name = "change1">
-                    </td>
-                </tr>
-
-
-            </table>
-
-            <table>
-
-            </table>
-
-        </form>
-
-
-
-
-</div>
-
+    try {
+        query = "select * from instruments";
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
+        String user = "root";
+        String password = "Blue_22!";
+        Connection conn = DriverManager.getConnection(url, user, password);
+        stm = conn.createStatement();
+        rs = stm.executeQuery(query);
+    }catch (Exception ex){
+        ex.printStackTrace();
+        out.println("Error "+ex.getMessage());
+    }
+%>
 
     <p>Initialize-Servlet <a href="MyServlet">here</a></p>
     <p>Reset-Servlet <a href="ResetServlet">here</a></p>
     <p>Run-Servlet <a href="RunServlet">here</a></p>
+    <p>Result-Page <a href="result.jsp">here</a></p>
 
 
     <form action="MyServlet" method="post">
+
         <label style="margin-right: 10px">Instrument 1:</label>
+
         <select name=instrument1 class="form-control" style="width: 250px;">
             <option inst1="-1">Select Instrument</option>
             <%
-            try{
-                String query ="select * from instruments";
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-                String user = "root";
-                String password = "Blue_22!";
-                Connection conn = DriverManager.getConnection(url,user,password);
-                Statement stm = conn.createStatement();
-                ResultSet rs = stm.executeQuery(query);
+                rs = stm.executeQuery(query);
                 while (rs.next()){
-                %>
-                <option inst1="<%=rs.getString("ticker")%>"><%=rs.getString("name")%></option>
-                <%
+            %>
+            <option><%=rs.getString("name")%></option>
+            <%
                 }
-            }catch (Exception ex){
-                ex.printStackTrace();
-                out.println("Error "+ex.getMessage());
-            }
             %>
         </select>
+
         Quantity: <input type = "text" name = "quantity1">
 
         <br/>
@@ -128,27 +70,17 @@
         <label style="margin-right: 10px">Instrument 2:</label>
         <select name=instrument2 class="form-control" style="width: 250px;">
             <option inst2="-1">Select Instrument</option>
+
             <%
-                try{
-                    String query ="select * from instruments";
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-                    String user = "root";
-                    String password = "Blue_22!";
-                    Connection conn = DriverManager.getConnection(url,user,password);
-                    Statement stm = conn.createStatement();
-                    ResultSet rs = stm.executeQuery(query);
-                    while (rs.next()){
+                rs = stm.executeQuery(query);
+                while (rs.next()){
             %>
-            <option inst2="<%=rs.getString("ticker")%>"><%=rs.getString("name")%></option>
+            <option><%=rs.getString("name")%></option>
             <%
-                    }
-                }catch (Exception ex){
-                    ex.printStackTrace();
-                    out.println("Error "+ex.getMessage());
                 }
             %>
         </select>
+
         Quantity: <input type = "text" name = "quantity2">
 
         <br/>
@@ -158,23 +90,11 @@
         <select name=instrument3 class="form-control" style="width: 250px;">
             <option inst3="-1">Select Instrument</option>
             <%
-                try{
-                    String query ="select * from instruments";
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-                    String user = "root";
-                    String password = "Blue_22!";
-                    Connection conn = DriverManager.getConnection(url,user,password);
-                    Statement stm = conn.createStatement();
-                    ResultSet rs = stm.executeQuery(query);
-                    while (rs.next()){
+                rs = stm.executeQuery(query);
+                while (rs.next()){
             %>
-            <option inst3="<%=rs.getString("ticker")%>"><%=rs.getString("name")%></option>
+            <option><%=rs.getString("name")%></option>
             <%
-                    }
-                }catch (Exception ex){
-                    ex.printStackTrace();
-                    out.println("Error "+ex.getMessage());
                 }
             %>
         </select>
@@ -185,7 +105,6 @@
 
         <button type="submit">Submit</button>
     </form>
-
 
 </body>
 

@@ -33,6 +33,30 @@ public class SqlTable {
     }
 
     /**
+     * Method to get a value from the instrument table.
+     * @param selectColumn The ticker of the instrument
+     * @param whereColumn The respective column (ticker, ccy, name, country)
+     * @return returns the column value
+     */
+    public String getInstrumentData(String selectColumn, String whereColumn, String condition){
+        String conditionString = "\""+condition+"\"";
+        String result = "";
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT "+selectColumn+" from instruments where "+whereColumn+"="+conditionString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                result = resultSet.getString(selectColumn);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    /**
      * Method to store a price in the MySQL-DB.
      * @param ticker The ticker of the instrument.
      * @param timeStamp The timestamp (date) of the price

@@ -95,5 +95,9 @@ public class MyServlet extends HttpServlet {
         calculations.calcPortfolioVolatility("current");
         calculations.calcOptimalPortfolio("current",0);
 
+        //RequestDispatcher dispatcher = request.getRequestDispatcher("result");
+        response.sendRedirect("result.jsp");
+
+
     }
 }

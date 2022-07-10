@@ -25,6 +25,16 @@ public class Calculations {
         sqlTable = Control.getSqlTable();
     }
 
+    public void calcPortfolioValue(String portfolio){
+
+
+    }
+
+    public void calcInstrumentQuantity(){
+
+    }
+
+
     /**
      * Method that calculates the simpleReturn and steadyReturn for each instrument for each day in the data-sample.
      * The results are stored in the MySQL-DB in the "metrics" table.
