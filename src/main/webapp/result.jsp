@@ -8,6 +8,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*"%>
 <%@ page import="persistance.SqlTable" %>
+<%@ page import="java.util.ArrayList" %>
 <html>
 <head>
     <title>Title</title>
@@ -16,66 +17,62 @@
 
 <%
     //Variables
-    ResultSet rs = null;
-    SqlTable objSqlTable = new SqlTable();
+    SqlTable sqlTable = new SqlTable();
+    ArrayList<String> tickerList = sqlTable.getPortfolioTickers("current");
+    int tickerListSize = tickerList.size();
 
-    try {
-        String query = "select * from instruments";
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-        String user = "root";
-        String password = "Blue_22!";
-        Connection conn = DriverManager.getConnection(url, user, password);
-        Statement stm = conn.createStatement();
-        rs = stm.executeQuery(query);
-    }catch (Exception ex){
-        ex.printStackTrace();
-        out.println("Error "+ex.getMessage());
-    }
+
 %>
-
 
     <table>
 
         <tr>
+            <th>Titel</th>
             <th>Ticker</th>
+            <th>Anzahl</th>
+            <th>CCY</th>
+            <th>Preis</th>
+            <th>Weight %</th>
+            <th>% Change</th>
         </tr>
+
         <tr>
-            <td>
-                <select name=instrument05 class="form-control" style="width: 250px;">
-                    <option inst1="-1">Select Instrument</option>
+            <%
+                String ticker0=null;
+                String instrument0=null;
+                String ccy0=null;
+                String country0=null;
+                double price0 = 0;
+                double weight0 = 0;
+                if(tickerListSize>0){
+                    ticker0 = tickerList.get(0);
+                    instrument0 = sqlTable.getInstrumentData("name","ticker",ticker0);
+                    ccy0 = sqlTable.getInstrumentData("ccy","ticker",ticker0);
+                    country0 = sqlTable.getInstrumentData("country","ticker",ticker0);
+                    price0 = sqlTable.getLatestPrice(ticker0);
+                    weight0 = sqlTable.getPortfolioWeight(ticker0,"current");
+                }
 
-                    <%
-                        while (rs.next()){
-                    %>
-                    <option><%=rs.getString("name")%></option>
-                    <%
-                        }
-                    %>
-                </select>
+            %>
+            <td>
+                <input readonly type="text" name = "instrument00" value=<%=instrument0%>>
             </td>
             <td>
-                <%
-                    String instrument;
-                    try {
-                        instrument = request.getParameter("instrument05").toString();
-                    }catch (Exception ex){
-                        instrument = "-";
-                    }
-
-                    System.out.println(instrument);
-                    String name1 = objSqlTable.getInstrumentData("ticker","name","ABB Ltd");
-                %>
-                <input readonly type="text" name = "price01" value=<%=name1%>>
+                <input readonly type="text" name = "ticker00" value=<%=ticker0%>>
             </td>
-
+            <td>
+                <input readonly type="text" name = "ccy00" value=<%=ccy0%>>
+            </td>
+            <td>
+                <input readonly type="text" name = "country00" value=<%=country0%>>
+            </td>
+            <td>
+                <input readonly type="text" name = "country00" value=<%=price0%>>
+            </td>
+            <td>
+                <input readonly type="text" name = "country00" value=<%=weight0%>>
+            </td>
         </tr>
-
-
-
-
-
-
 
 
     </table>
