@@ -1,21 +1,40 @@
-<%--
+<%@ page import="java.sql.ResultSet" %>
+<%@ page import="java.sql.Statement" %>
+<%@ page import="java.sql.Connection" %>
+<%@ page import="java.sql.DriverManager" %><%--
   Created by IntelliJ IDEA.
   User: kevin.reichmuth
-  Date: 19.05.22
-  Time: 11:20 PM
+  Date: 16.07.22
+  Time: 2:48 PM
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.sql.*"%>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
-    <title>PortfolioWebApp</title>
     <title>Portfolio Web Application</title>
-    <div class="header">
-        <h1 style="display: inline-block" >Portfolio</h1>
-        <h2 style="display: inline-block" >Analyse Tool</h2>
-    </div>
+    <h1 style="display: inline-block" >Portfolio</h1>
+    <h2 style="display: inline-block" >Analyse Tool</h2>
+    <br>
+    <b>Willkommen im Portfolio Analyse Tool!</b>
+    <br>
+    <p>Bitte selektieren Sie ihre Titel und erfassen die dazugehörige Anzahl "QTY" im Bereich Musterportfolio.</p>
+
+    <script>
+
+        function inputValidation(){
+            for(i=1; i<2; i++){
+                var id = "qty"+i
+                var element = document.getElementById(id).innerHTML;
+                alert(element);
+                return false;
+            }
+        }
+
+    </script>
+
+
 </head>
 <body>
 
@@ -40,71 +59,112 @@
     }
 %>
 
-    <p>Initialize-Servlet <a href="MyServlet">here</a></p>
-    <p>Reset-Servlet <a href="ResetServlet">here</a></p>
-    <p>Run-Servlet <a href="RunServlet">here</a></p>
-    <p>Result-Page <a href="result.jsp">here</a></p>
 
 
-    <form action="MyServlet" method="post">
+<!Portfolio Eingabe>
+<div>
+    <h3>Portfolio Eingabe:</h3>
 
-        <label style="margin-right: 10px">Instrument 1:</label>
+    <form action="MainServlet" method="post">
 
-        <select name=instrument1 class="form-control" style="width: 250px;">
-            <option inst1="-1">Select Instrument</option>
-            <%
-                rs = stm.executeQuery(query);
-                while (rs.next()){
-            %>
-            <option><%=rs.getString("name")%></option>
-            <%
-                }
-            %>
-        </select>
+        <table id="table_portfolio_eingabe">
 
-        Quantity: <input type = "text" name = "quantity1">
+            <!Column name>
+            <tr>
+                <th>Titel</th>
+                <th>Anzahl</th>
+            </tr>
 
-        <br/>
-        <br/>
+            <!Row 1>
+            <tr>
+                <td>
+                    <select name="instrument1" class="input">
+                        <option inst1="-1">Select Instrument</option>
+                        <%
+                            rs = stm.executeQuery(query);
+                            while (rs.next()){
+                        %>
+                        <option><%=rs.getString("name")%></option>
+                        <%
+                            }
+                        %>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="quantity1" class="input" size="10" pattern="[0-9]+">
+                </td>
+            </tr>
 
-        <label style="margin-right: 10px">Instrument 2:</label>
-        <select name=instrument2 class="form-control" style="width: 250px;">
-            <option inst2="-1">Select Instrument</option>
+            <!Row 2>
+            <tr>
+                <td>
+                    <select name="instrument2" class="input">
+                        <option inst1="-1">Select Instrument</option>
+                        <%
+                            rs = stm.executeQuery(query);
+                            while (rs.next()){
+                        %>
+                        <option><%=rs.getString("name")%></option>
+                        <%
+                            }
+                        %>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="quantity2" class="input" size="10" pattern="[0-9]+">
+                </td>
+            </tr>
 
-            <%
-                rs = stm.executeQuery(query);
-                while (rs.next()){
-            %>
-            <option><%=rs.getString("name")%></option>
-            <%
-                }
-            %>
-        </select>
+            <!Row 3>
+            <tr>
+                <td>
+                    <select name="instrument3" class="input">
+                        <option inst1="-1">Select Instrument</option>
+                        <%
+                            rs = stm.executeQuery(query);
+                            while (rs.next()){
+                        %>
+                        <option><%=rs.getString("name")%></option>
+                        <%
+                            }
+                        %>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="quantity3" class="input" size="10" pattern="[0-9]+">
+                </td>
+            </tr>
 
-        Quantity: <input type = "text" name = "quantity2">
+        </table>
 
-        <br/>
-        <br/>
+        <h3>Optimales Portfolio:</h3>
 
-        <label style="margin-right: 10px">Instrument 3:</label>
-        <select name=instrument3 class="form-control" style="width: 250px;">
-            <option inst3="-1">Select Instrument</option>
-            <%
-                rs = stm.executeQuery(query);
-                while (rs.next()){
-            %>
-            <option><%=rs.getString("name")%></option>
-            <%
-                }
-            %>
-        </select>
-        Quantity: <input type = "text" name = "quantity3">
+        <input type="radio" id="minRisk" name="calc_strat" class="radio">
+        <label for="minRisk">Min-Risk-Portfolio</label><br>
+        <input type="radio" id="targetYield" name="calc_strat" class="radio">
+        <label for="targetYield">Efficient Frontier (target yield)</label><br>
 
-        <br/>
-        <br/>
+        <br>
+        <input type="range" min="0.1" max="50" value="25" step="0.1" class="slider" onchange="updateTextInput(this.value);">
+        <br>
+        <label for="input_zielRendite">Zielrendite in %: </label>
+        <input type="text" id="input_zielRendite" name="zielRendite" value="" readonly>
+
+        <script>
+            function updateTextInput(val){
+                document.getElementById('input_zielRendite').value=val;
+            }
+        </script>
+
+        <br>
+        <br>
 
         <button type="submit">Submit</button>
+        <button type="button" onclick="inputValidation()">Submit</button>
+
     </form>
+
+</div>
 
 </body>
 

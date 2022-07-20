@@ -304,10 +304,12 @@ public class SqlTable {
      * Method that returns the value of the portfolio.
      * @return returns the portfolioValue
      */
-    public double getPortfolioValue(){
+    public double getPortfolioValue(String portfolio){
         double portfolioValue = 0;
+        String portfolioString = "\""+portfolio+"PortfolioValue"+"\"";
         Connection connection = getConnection();
-        String sqlCommand = "SELECT value from metrics_summary where ticker=\"PORTFOLIO\" && metric=\"portfolioValue\";";
+        String sqlCommand = "SELECT value from metrics_summary where ticker=\"PORTFOLIO\" && metric="+portfolioString+";";
+        //String sqlCommand = "SELECT value from metrics_summary where ticker=\"PORTFOLIO\" && metric=\"portfolioValue\";";
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);

@@ -32,6 +32,7 @@ public class Calculations {
      */
     public void calcPortfolioValue(String portfolio){
         double portfolioValue = 0;
+        String metricName = portfolio+"PortfolioValue";
         ArrayList<String> instruments = sqlTable.getPortfolioTickers(portfolio);
 
         for(String ticker:instruments){
@@ -39,7 +40,7 @@ public class Calculations {
             double price = sqlTable.getLatestPrice(ticker);
             portfolioValue = portfolioValue + (quantity*price);
         }
-        sqlTable.insertMetricSummary("PORTFOLIO","portfolioValue",portfolioValue);
+        sqlTable.insertMetricSummary("PORTFOLIO",metricName,portfolioValue);
     }
 
     /**
@@ -47,8 +48,8 @@ public class Calculations {
      * @param weight The weight of the respective instrument in the portfolio.
      * @return returns the instrumentQuantity
      */
-    public int calcInstrumentQuantity(double weight, double price){
-        double portfolioValue = sqlTable.getPortfolioValue();
+    public int calcInstrumentQuantity(String portfolio, double weight, double price){
+        double portfolioValue = sqlTable.getPortfolioValue(portfolio);
         double instrumentQuantity = (portfolioValue*weight)/price;
         return (int) instrumentQuantity;
     }
@@ -136,6 +137,7 @@ public class Calculations {
     public void calcPortfolioReturn(String portfolio){
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
         double portfolioReturn = 0;
+        String metricName = portfolio+"PortfolioReturn";
 
         for(String value:tickerList){
             double weight = sqlTable.getPortfolioWeight(value,portfolio);
@@ -143,7 +145,7 @@ public class Calculations {
             portfolioReturn= portfolioReturn+(weight*instrumentReturn);
         }
 
-        sqlTable.insertMetricSummary("PORTFOLIO","portfolioReturn",portfolioReturn);
+        sqlTable.insertMetricSummary("PORTFOLIO",metricName,portfolioReturn);
     }
 
     /**
@@ -174,6 +176,7 @@ public class Calculations {
         double varianceCovarianceMatrix[][] = new double[countInstruments][countInstruments];
         int counter1 = 0;
         int counter2 = 0;
+        String metricName = portfolio+"PortfolioVolatility";
 
         //Write the weights into weights[]
         for (String ticker : tickerList){
@@ -206,7 +209,7 @@ public class Calculations {
         RealMatrix actual1 = matrixWeightRow.multiply(matrixVarianceCovariance).multiply(matrixWeightColumn);
         portfolioVolatility = actual1.getEntry(0,0);
         portfolioVolatility = Math.sqrt(portfolioVolatility);
-        sqlTable.insertMetricSummary("PORTFOLIO","portfolioVolatility",portfolioVolatility);
+        sqlTable.insertMetricSummary("PORTFOLIO",metricName,portfolioVolatility);
     }
 
     /**
@@ -285,7 +288,7 @@ public class Calculations {
         for(String ticker : tickerList){
             double newWeitght = actual.getEntry(counter1,0);
             double price = sqlTable.getLatestPrice(ticker);
-            int newQuantity = calcInstrumentQuantity(newWeitght,price);
+            int newQuantity = calcInstrumentQuantity(portfolio,newWeitght,price);
             sqlTable.insertPortfolio(ticker,newPortfolio,newQuantity,newWeitght);
             counter1++;
         }
