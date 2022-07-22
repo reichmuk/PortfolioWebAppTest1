@@ -41,6 +41,28 @@ public class MainServlet extends HttpServlet {
         ArrayList<Integer> quantityList = new ArrayList<Integer>();
         double portfolioValue = 0;
 
+        //Get optimal portfolio parameter
+        String strategy = request.getParameter("strategy").toString();
+        String targetReturnString = request.getParameter("zielRendite").toString();
+        calculations.setStrategy(strategy);
+
+        double targetReturnCondition=0;
+
+
+        if(strategy.equals("minRisk")){
+            targetReturnCondition = 0;
+        }
+
+        if(strategy.equals("targetReturn")){
+            if(targetReturnString ==""){
+                targetReturnCondition = 0;
+            }
+            else {
+                targetReturnCondition = Double.parseDouble(targetReturnString)/100;
+            }
+        }
+
+
         //Save selected instruments in instrumentList
         for(int i =1; i<4;i++){
             String instrument = "instrument"+i;
@@ -80,7 +102,12 @@ public class MainServlet extends HttpServlet {
         calculations.calcPortfolioReturn("current");
         calculations.calcCorrelations("current");
         calculations.calcPortfolioVolatility("current");
-        calculations.calcOptimalPortfolio("current",0);
+
+        calculations.calcOptimalPortfolio(strategy,targetReturnCondition);
+
+        calculations.calcPortfolioValue(strategy);
+        calculations.calcPortfolioReturn(strategy);
+        calculations.calcPortfolioVolatility(strategy);
 
         //Direct to result page
         response.sendRedirect("result.jsp");

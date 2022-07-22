@@ -9,6 +9,8 @@
 <%@ page import="java.sql.*"%>
 <%@ page import="persistance.SqlTable" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="domain.Control" %>
+<%@ page import="domain.Calculations" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,6 +27,10 @@
 
     <script>
 
+        function topercentage(){
+            
+        }
+
         function back(){
         }
 
@@ -37,7 +43,8 @@
     <!-- Get tickerList and tickerListSize -->
     <%
         //Variables
-        SqlTable sqlTable = new SqlTable();
+        SqlTable sqlTable = Control.getSqlTable();
+        Calculations calculations = Control.getCalculations();
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers("current");
         int tickerListSize = tickerList.size();
     %>
@@ -52,7 +59,6 @@
                 double currentPortfolioValue = sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioValue");
                 double currentPortfolioReturn = sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioReturn");
                 double currentPortfolioVolatility = sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioVolatility");
-
             %>
 
             <tr>
@@ -151,17 +157,37 @@
         <h3>Optimales Portfolio:</h3>
 
         <table class="table_summary_values">
+
+            <%
+                String strategy = calculations.getStrategy();
+                double optimalPortfolioValue = 0;
+                double optimalPortfolioReturn = 0;
+                double optimalPortfolioVolatility = 0;
+
+                if(strategy.equals("targetReturn")){
+                    optimalPortfolioValue = sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioValue");
+                    optimalPortfolioReturn = sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioReturn");
+                    optimalPortfolioVolatility = sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioVolatility");
+                }
+
+                if(strategy.equals("minRisk")){
+                    optimalPortfolioValue = sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioValue");
+                    optimalPortfolioReturn = sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioReturn");
+                    optimalPortfolioVolatility = sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioVolatility");
+                }
+            %>
+
             <tr>
                 <td><label for="portfolioWertOptimal">Portfoliowert CHF (optimal): </label></td>
-                <td><input type="text" id="portfolioWertOptimal" value="" class="input_data" readonly></td>
+                <td><input type="text" id="portfolioWertOptimal" class="input_data" value=<%=optimalPortfolioValue%> readonly></td>
             </tr>
             <tr>
                 <td><label for="portfolioRenditeOptimal">Portfoliorendite in % (optimal): </label></td>
-                <td><input type="text" id="portfolioRenditeOptimal" value="" class="input_data" pattern="[0-9]+" readonly></td>
+                <td><input type="text" id="portfolioRenditeOptimal" class="input_data" pattern="[0-9]+" value=<%=optimalPortfolioReturn%> readonly></td>
             </tr>
             <tr>
                 <td><label for="portfolioVolatilitaetOptimal">Portfoliovolatilität in % (optimal): </label></td>
-                <td><input type="text" id="portfolioVolatilitaetOptimal" value="" class="input_data" pattern="[0-9]+" readonly></td>
+                <td><input type="text" id="portfolioVolatilitaetOptimal" class="input_data" pattern="[0-9]+" value=<%=optimalPortfolioVolatility%> readonly></td>
             </tr>
         </table>
 

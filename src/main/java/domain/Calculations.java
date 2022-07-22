@@ -17,12 +17,14 @@ public class Calculations {
 
     //Declare variables
     private SqlTable sqlTable;
+    private static String strategy;
 
     /**
      * CONSTRUCTOR
      */
     public Calculations(){
         sqlTable = Control.getSqlTable();
+        strategy = "";
     }
 
     /**
@@ -218,10 +220,9 @@ public class Calculations {
      * @param portfolio The "current" portfolio.
      * @param condition The condition minRisk=0 or targetReturn=x.
      */
-    public void calcOptimalPortfolio(String portfolio,double condition){
-        String newPortfolio = "";
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
-        int countInstruments = countPortfolioInstruments(portfolio);
+    public void calcOptimalPortfolio(String portfolio, double targetYield){
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers("current");
+        int countInstruments = countPortfolioInstruments("current");
         int matrixSize = countInstruments+2;
         double lagrangeMatrix[][] = new double[matrixSize][matrixSize];
         double conditions[] = new double[matrixSize];
@@ -229,11 +230,6 @@ public class Calculations {
         int counter2 = 0;
         int counter3 = 0;
 
-        if(condition==0){
-            newPortfolio="minRisk";
-        }else {
-            newPortfolio="targetReturn";
-        }
 
         //Write covariances into lagrangeMatrix[][]
         for(String ticker : tickerList){
@@ -276,7 +272,7 @@ public class Calculations {
         }
 
         //Calculate new weights in matrices
-        conditions[countInstruments] = condition;
+        conditions[countInstruments] = targetYield;
         conditions[countInstruments+1]=1;
         RealMatrix matrixConditions = MatrixUtils.createColumnRealMatrix(conditions);
         RealMatrix matrixLagrange = MatrixUtils.createRealMatrix(lagrangeMatrix);
@@ -288,9 +284,17 @@ public class Calculations {
         for(String ticker : tickerList){
             double newWeitght = actual.getEntry(counter1,0);
             double price = sqlTable.getLatestPrice(ticker);
-            int newQuantity = calcInstrumentQuantity(portfolio,newWeitght,price);
-            sqlTable.insertPortfolio(ticker,newPortfolio,newQuantity,newWeitght);
+            int newQuantity = calcInstrumentQuantity("current",newWeitght,price);
+            sqlTable.insertPortfolio(ticker,portfolio,newQuantity,newWeitght);
             counter1++;
         }
+    }
+
+    public void setStrategy(String strategy){
+        this.strategy=strategy;
+    }
+
+    public String getStrategy(){
+        return strategy;
     }
 }

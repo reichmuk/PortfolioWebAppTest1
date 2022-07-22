@@ -113,6 +113,12 @@ table{
 
 #input_zielRendite{
     border: 0px;
+    background-color: rgb(251, 253, 249)
+}
+
+#input_strategy{
+    border: 0px;
+    background-color: rgb(251, 253, 249)
 }
 
 :invalid{
