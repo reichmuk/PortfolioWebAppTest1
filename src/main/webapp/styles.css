@@ -108,6 +108,7 @@ table{
 .input_data_instrument{
     border: 2px solid rgb(56,87,35);
     background-color: rgb(242, 242, 242);
+    /* check */
     width: 200px;
 }
 

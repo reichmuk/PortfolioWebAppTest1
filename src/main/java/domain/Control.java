@@ -1,4 +1,5 @@
 package domain;
+import constants.Constants;
 import persistance.SqlTable;
 
 /**
@@ -13,6 +14,7 @@ public class Control {
     private static SqlTable sqlTable;
     private static Calculations calculations;
     private static YahooApi yahooApi;
+    private static Constants constants;
 
 
 
@@ -24,6 +26,7 @@ public class Control {
         sqlTable = new SqlTable();
         calculations = new Calculations();
         yahooApi = new YahooApi();
+        constants = new Constants();
 
     }
 
@@ -49,5 +52,13 @@ public class Control {
      */
     public static SqlTable getSqlTable() {
         return sqlTable;
+    }
+
+    /**
+     * GETTER - Get class Constants.
+     * @return Class Constants
+     */
+    public static Constants getConstants() {
+        return constants;
     }
 }

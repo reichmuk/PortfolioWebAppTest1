@@ -1,7 +1,9 @@
 <%@ page import="java.sql.ResultSet" %>
 <%@ page import="java.sql.Statement" %>
 <%@ page import="java.sql.Connection" %>
-<%@ page import="java.sql.DriverManager" %><%--
+<%@ page import="java.sql.DriverManager" %>
+<%@ page import="domain.Calculations" %>
+<%@ page import="domain.Control" %><%--
   Created by IntelliJ IDEA.
   User: kevin.reichmuth
   Date: 16.07.22
@@ -31,6 +33,7 @@
                 return false;
             }
         }
+
 
     </script>
 
@@ -150,8 +153,8 @@
         <br>
         <input type="range" min="0.1" max="50" value="25" step="0.1" class="slider" onchange="updateTextInput(this.value);">
         <br>
-        <label for="input_zielRendite">Zielrendite in %: </label>
-        <input type="text" id="input_zielRendite" name="zielRendite" value="" readonly>
+        <label for="input_targetReturn">Zielrendite in %: </label>
+        <input type="text" id="input_targetReturn" name="targetReturn" value="" readonly>
 
 
         <script>
@@ -162,7 +165,7 @@
 
         <script>
             function updateTextInput(val){
-                document.getElementById('input_zielRendite').value=val;
+                document.getElementById('input_targetReturn').value=val;
             }
         </script>
 
@@ -170,8 +173,12 @@
         <br>
 
         <button type="submit">Submit</button>
-        <button type="button" onclick="inputValidation()">Submit</button>
+        <br>
+        <br>
+    </form>
 
+    <form action="ResetServlet" method="get">
+        <button type="submit">Reset</button>
     </form>
 
 </div>

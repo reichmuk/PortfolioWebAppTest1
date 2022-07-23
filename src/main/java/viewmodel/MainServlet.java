@@ -1,4 +1,5 @@
 package viewmodel;
+import constants.Constants;
 import domain.Calculations;
 import domain.Control;
 import domain.YahooApi;
@@ -43,17 +44,17 @@ public class MainServlet extends HttpServlet {
 
         //Get optimal portfolio parameter
         String strategy = request.getParameter("strategy").toString();
-        String targetReturnString = request.getParameter("zielRendite").toString();
+        String targetReturnString = request.getParameter(Constants.TARGETRETURN).toString();
         calculations.setStrategy(strategy);
 
         double targetReturnCondition=0;
 
 
-        if(strategy.equals("minRisk")){
+        if(strategy.equals(Constants.MINRISK)){
             targetReturnCondition = 0;
         }
 
-        if(strategy.equals("targetReturn")){
+        if(strategy.equals(Constants.TARGETRETURN)){
             if(targetReturnString ==""){
                 targetReturnCondition = 0;
             }
@@ -92,16 +93,16 @@ public class MainServlet extends HttpServlet {
             String ticker = sqlTable.getInstrumentTicker(instrument);
             int quantity = quantityList.get(i);
             double weight = (quantity*sqlTable.getLatestPrice(ticker))/portfolioValue;
-            sqlTable.insertPortfolio(ticker,"current",quantity,weight);
+            sqlTable.insertPortfolio(ticker,Constants.CURRENT,quantity,weight);
             calculations.calcSingleReturn(ticker);
             calculations.calcMetricSummary(ticker);
         }
 
         //Process al portfolio calculations
-        calculations.calcPortfolioValue("current");
-        calculations.calcPortfolioReturn("current");
-        calculations.calcCorrelations("current");
-        calculations.calcPortfolioVolatility("current");
+        calculations.calcPortfolioValue(Constants.CURRENT);
+        calculations.calcPortfolioReturn(Constants.CURRENT);
+        calculations.calcCorrelations(Constants.CURRENT);
+        calculations.calcPortfolioVolatility(Constants.CURRENT);
 
         calculations.calcOptimalPortfolio(strategy,targetReturnCondition);
 

@@ -1,4 +1,6 @@
 package persistance;
+import constants.Constants;
+
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -91,15 +93,15 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                double price = Double.parseDouble(resultSet.getString("price"));
+                double price = Double.parseDouble(resultSet.getString(Constants.PRICE));
                 priceList.add(price);
-                double timeStamp = Double.parseDouble(resultSet.getString("time_stamp"));
+                double timeStamp = Double.parseDouble(resultSet.getString(Constants.TIMESTAMP));
                 timeStampList.add(timeStamp);
             }
         }catch (SQLException e){
             e.printStackTrace();
         }
-        if(column=="price"){
+        if(column==Constants.PRICE){
             return priceList;
         } else {return timeStampList;}
     }
@@ -110,7 +112,7 @@ public class SqlTable {
      * @return returns the latest price
      */
     public double getLatestPrice(String ticker){
-        ArrayList<Double> prices = getPriceList("price",ticker);
+        ArrayList<Double> prices = getPriceList(Constants.PRICE,ticker);
         int listSize = prices.size()-1;
         double price = prices.get(listSize);
         return price;
@@ -152,7 +154,7 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                double value = Double.parseDouble(resultSet.getString("value"));
+                double value = Double.parseDouble(resultSet.getString(Constants.VALUE));
                 metricList.add(value);
             }
         }catch (SQLException e){
@@ -216,7 +218,7 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                double value = Double.parseDouble(resultSet.getString("value"));
+                double value = Double.parseDouble(resultSet.getString(Constants.VALUE));
                 metricSummaryValue = value;
             }
         }catch (SQLException e){
@@ -239,7 +241,7 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                String value = resultSet.getString("ticker");
+                String value = resultSet.getString(Constants.TICKER);
                 ticker = value;
             }
         }catch (SQLException e){
@@ -265,7 +267,7 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                double value = Double.parseDouble(resultSet.getString("weight"));
+                double value = Double.parseDouble(resultSet.getString(Constants.WEIGHT));
                 portfolioWeight = value;
             }
         }catch (SQLException e){
@@ -291,7 +293,7 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                int value = Integer.parseInt(resultSet.getString("quantity"));
+                int value = Integer.parseInt(resultSet.getString(Constants.QUANTITY));
                 portfolioQuantity = value;
             }
         }catch (SQLException e){
@@ -314,7 +316,7 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                double value = Double.parseDouble(resultSet.getString("value"));
+                double value = Double.parseDouble(resultSet.getString(Constants.VALUE));
                 portfolioValue = value;
             }
         }catch (SQLException e){
@@ -338,7 +340,7 @@ public class SqlTable {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlCommand);
             while(resultSet.next()){
-                String value = resultSet.getString("ticker");
+                String value = resultSet.getString(Constants.TICKER);
                 tickerList.add(value);
             }
         }catch (SQLException e){

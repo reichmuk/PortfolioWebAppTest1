@@ -11,6 +11,7 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="domain.Control" %>
 <%@ page import="domain.Calculations" %>
+<%@ page import="java.text.DecimalFormat" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -28,10 +29,7 @@
     <script>
 
         function topercentage(){
-            
-        }
 
-        function back(){
         }
 
     </script>
@@ -46,7 +44,9 @@
         SqlTable sqlTable = Control.getSqlTable();
         Calculations calculations = Control.getCalculations();
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers("current");
+        String strategy = calculations.getStrategy();
         int tickerListSize = tickerList.size();
+        DecimalFormat df2 = new DecimalFormat("#.00");
     %>
 
     <div id="div_portfolio">
@@ -56,9 +56,11 @@
         <table class="table_summary_values">
 
             <%
-                double currentPortfolioValue = sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioValue");
-                double currentPortfolioReturn = sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioReturn");
-                double currentPortfolioVolatility = sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioVolatility");
+                int intCurrentPortfolioValue = (int) sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioValue");
+                String currentPortfolioValue = String.format("%,d",intCurrentPortfolioValue);
+                DecimalFormat df = new DecimalFormat("#.000000");
+                String currentPortfolioReturn = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioReturn")*100)+"%";
+                String currentPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioVolatility")*100)+"%";
             %>
 
             <tr>
@@ -87,9 +89,9 @@
                 <th>QTY</th>
                 <th>CCY</th>
                 <th>Preis</th>
-                <th>Weight</th>
+                <th>Weight %</th>
                 <th>Opt. QTY</th>
-                <th>Opt. Weight</th>
+                <th>Opt. Weight %</th>
                 <th>Trade</th>
             </tr>
 
@@ -101,9 +103,9 @@
                     int qty01 = 0;
                     String ccy01 = null;
                     double price01 = 0;
-                    double weight01 = 0;
+                    String weight01 = "";
                     int optQty01 = 0;
-                    double optWeight01 = 0;
+                    String optWeight01 = "";
                     int trade01 = 0;
 
                     if(tickerListSize>0){
@@ -112,17 +114,24 @@
                         qty01 = sqlTable.getPortfolioQuantity(ticker01,"current");
                         ccy01 = sqlTable.getInstrumentData("ccy","ticker",ticker01);
                         price01 = sqlTable.getLatestPrice(ticker01);
-                        weight01 = sqlTable.getPortfolioWeight(ticker01,"current");
+                        weight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,"current")*100)+"%";
                         // UPDATE minRisk or targetReturn
-                        optQty01 = sqlTable.getPortfolioQuantity(ticker01,"minRisk");
-                        optWeight01 = sqlTable.getPortfolioWeight(ticker01,"minRisk");
-                        // UPDATE trade (calculation)
-                        trade01 = 1;
+                        if(strategy.equals("targetReturn")){
+                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,"targetReturn");
+                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,"targetReturn")*100)+"%";
+                            trade01 = optQty01-qty01;
+                        }
+
+                        if(strategy.equals("minRisk")){
+                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,"minRisk");
+                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,"minRisk")*100)+"%";
+                            trade01 = optQty01-qty01;
+                        }
                     }
                 %>
 
                 <td>
-                    <input type="text" name="instrument01" class="input_data_instrument" size="10" value=<%=instrument01%> readonly>
+                    <input type="text" name="instrument01" class="input_data_instrument" size="10" value="<%=instrument01%>" readonly>
                 </td>
                 <td>
                     <input type="text" name="ticker01" class="input_data" size="10" value=<%=ticker01%> readonly>
@@ -159,22 +168,23 @@
         <table class="table_summary_values">
 
             <%
-                String strategy = calculations.getStrategy();
-                double optimalPortfolioValue = 0;
-                double optimalPortfolioReturn = 0;
-                double optimalPortfolioVolatility = 0;
+                int intOptimalPortfolioValue = 0;
+                String optimalPortfolioReturn = "";
+                String optimalPortfolioVolatility = "";
 
                 if(strategy.equals("targetReturn")){
-                    optimalPortfolioValue = sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioValue");
-                    optimalPortfolioReturn = sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioReturn");
-                    optimalPortfolioVolatility = sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioVolatility");
+                    intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioValue");
+                    optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioReturn")*100)+"%";
+                    optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioVolatility")*100)+"%";
                 }
 
                 if(strategy.equals("minRisk")){
-                    optimalPortfolioValue = sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioValue");
-                    optimalPortfolioReturn = sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioReturn");
-                    optimalPortfolioVolatility = sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioVolatility");
+                    intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioValue");
+                    optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioReturn")*100)+"%";
+                    optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioVolatility")*100)+"%";
                 }
+                String optimalPortfolioValue = String.format("%,d",intOptimalPortfolioValue);
+
             %>
 
             <tr>
@@ -194,7 +204,7 @@
     </div>
 
     <br>
-    <button type="button" onclick="back()">Back</button>
+    <button type="button" onclick="history.back()">Back</button>
 
 </body>
 
