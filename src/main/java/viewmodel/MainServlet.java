@@ -9,6 +9,7 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 @WebServlet(name = "MainServlet", value = "/MainServlet")
 public class MainServlet extends HttpServlet {
@@ -41,14 +42,19 @@ public class MainServlet extends HttpServlet {
         ArrayList<String> instrumentList = new ArrayList<String>();
         ArrayList<Integer> quantityList = new ArrayList<Integer>();
         double portfolioValue = 0;
+        double targetReturnCondition=0;
 
         //Get optimal portfolio parameter
+        Boolean strategyValidation = true;
+        Boolean targetReturnValidation = true;
         String strategy = request.getParameter("strategy").toString();
         String targetReturnString = request.getParameter(Constants.TARGETRETURN).toString();
         calculations.setStrategy(strategy);
 
-        double targetReturnCondition=0;
 
+        if(strategy.equals("")){
+            strategyValidation=false;
+        }
 
         if(strategy.equals(Constants.MINRISK)){
             targetReturnCondition = 0;
@@ -57,19 +63,23 @@ public class MainServlet extends HttpServlet {
         if(strategy.equals(Constants.TARGETRETURN)){
             if(targetReturnString ==""){
                 targetReturnCondition = 0;
+                targetReturnValidation = false;
             }
             else {
                 targetReturnCondition = Double.parseDouble(targetReturnString)/100;
             }
         }
 
-
-        //Save selected instruments in instrumentList
-        for(int i =1; i<4;i++){
+        //Save selected instruments in instrumentList, quantities in quantityList
+        boolean quantityValidation = true;
+        for(int i =1; i<4;i++){ //ACHTUNG LOOP noch anpassen!
             String instrument = "instrument"+i;
             String instrumentValue = request.getParameter(instrument).toString();
             String quantity = "quantity"+i;
             String quantityValue = request.getParameter(quantity).toString();
+            if(quantityValue.equals("")){
+                quantityValue="0";
+            }
 
             if(instrumentValue.equals("Select Instrument")){
             }else{
@@ -78,40 +88,80 @@ public class MainServlet extends HttpServlet {
             }
         }
 
-        //Import and store prices of all selected instruments
-        for(int i = 0; i<instrumentList.size(); i++){
-            String instrument = instrumentList.get(i);
-            String ticker = sqlTable.getInstrumentTicker(instrument);
-            yahooApi.priceImport(ticker);
-            int quantity = quantityList.get(i);
-            portfolioValue = portfolioValue+(quantity*sqlTable.getLatestPrice(ticker));
+        //Perform quantity validation
+        for(int quantity : quantityList){
+            if(quantity==0){
+                quantityValidation=false;
+            }
         }
 
-        //Add all instruments to portfolio with quantity and weight & Calc and store singleReturns and summaryMetrics for each instrument
-        for(int i = 0; i<instrumentList.size(); i++){
-            String instrument = instrumentList.get(i);
-            String ticker = sqlTable.getInstrumentTicker(instrument);
-            int quantity = quantityList.get(i);
-            double weight = (quantity*sqlTable.getLatestPrice(ticker))/portfolioValue;
-            sqlTable.insertPortfolio(ticker,Constants.CURRENT,quantity,weight);
-            calculations.calcSingleReturn(ticker);
-            calculations.calcMetricSummary(ticker);
+        //Perform instrument Validation (not empty and no duplicates)
+        boolean instrumentValidation = true;
+        if(instrumentList.size()==0){
+            instrumentValidation=false;
+        }
+        HashSet<String> instrumentSet = new HashSet<String>(instrumentList);
+
+        if(instrumentList.size()!=instrumentSet.size()){
+            instrumentValidation=false;
         }
 
-        //Process al portfolio calculations
-        calculations.calcPortfolioValue(Constants.CURRENT);
-        calculations.calcPortfolioReturn(Constants.CURRENT);
-        calculations.calcCorrelations(Constants.CURRENT);
-        calculations.calcPortfolioVolatility(Constants.CURRENT);
 
-        calculations.calcOptimalPortfolio(strategy,targetReturnCondition);
 
-        calculations.calcPortfolioValue(strategy);
-        calculations.calcPortfolioReturn(strategy);
-        calculations.calcPortfolioVolatility(strategy);
+        //Validation
+        if(strategyValidation&&targetReturnValidation&&quantityValidation&&instrumentValidation){
 
-        //Direct to result page
-        response.sendRedirect("result.jsp");
+            //Import and store prices of all selected instruments
+            for(int i = 0; i<instrumentList.size(); i++){
+                String instrument = instrumentList.get(i);
+                String ticker = sqlTable.getInstrumentTicker(instrument);
+                yahooApi.priceImport(ticker);
+                int quantity = quantityList.get(i);
+                portfolioValue = portfolioValue+(quantity*sqlTable.getLatestPrice(ticker));
+            }
+
+            //Add all instruments to portfolio with quantity and weight
+            for(int i = 0; i<instrumentList.size(); i++){
+                String instrument = instrumentList.get(i);
+                String ticker = sqlTable.getInstrumentTicker(instrument);
+                int quantity = quantityList.get(i);
+                double weight = (quantity*sqlTable.getLatestPrice(ticker))/portfolioValue;
+                sqlTable.insertPortfolio(ticker,Constants.CURRENT,quantity,weight);
+            }
+
+            //Timestamp cleanup
+            sqlTable.timeStampCleanup();
+
+
+            //Process al portfolio calculations
+
+            //Calc and store singleReturns and summaryMetrics for each instrument
+            for(int i = 0; i<instrumentList.size(); i++){
+                String instrument = instrumentList.get(i);
+                String ticker = sqlTable.getInstrumentTicker(instrument);
+                calculations.calcSingleReturn(ticker);
+                calculations.calcMetricSummary(ticker);
+            }
+
+            calculations.calcPortfolioValue(Constants.CURRENT);
+            calculations.calcPortfolioReturn(Constants.CURRENT);
+            calculations.calcCorrelations(Constants.CURRENT);
+            calculations.calcPortfolioVolatility(Constants.CURRENT);
+
+            calculations.calcOptimalPortfolio(strategy,targetReturnCondition);
+
+            calculations.calcPortfolioValue(strategy);
+            calculations.calcPortfolioReturn(strategy);
+            calculations.calcPortfolioVolatility(strategy);
+
+            //Direct to result page
+            response.sendRedirect("result.jsp");
+        }
+
+        System.out.println("Strategy-Validation: "+strategyValidation);
+        System.out.println("Target-Return-Validation: "+targetReturnValidation);
+        System.out.println("Quantity-Validation:" +quantityValidation);
+        System.out.println("Instrument-Validation: "+instrumentValidation);
 
     }
 }

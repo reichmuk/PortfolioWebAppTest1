@@ -26,6 +26,7 @@ h3{
     font-family: Calibri;
     font-size: 1.5em;
     font-weight: bold;
+    color: black;
 }
 
 b{
@@ -38,11 +39,15 @@ p{
     font-size: 1.1em;
 }
 
+label{
+    color: black;
+}
+
 /* DIV */
 
 div {
     background-color: rgb(251, 253, 249);
-    width: 450px;
+    width: 600px;
     border: 4px solid black;
     padding: 10px;
     margin: 10px;
@@ -80,6 +85,7 @@ table{
     font-weight: bold;
     width: 1100px;
     text-align: left;
+
 }
 
 #table_portfolio_eingabe{
@@ -112,7 +118,7 @@ table{
     width: 200px;
 }
 
-#input_zielRendite{
+#input_targetReturn{
     border: 0px;
     background-color: rgb(251, 253, 249)
 }
@@ -123,7 +129,6 @@ table{
 }
 
 :invalid{
-    background-color: white;
     color: red;
 }
 

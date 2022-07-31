@@ -147,11 +147,11 @@
         <input type="radio" id="targetYield" name="calc_strat" class="radio" value="targetReturn" onchange="displayRadioValue(this.value)">
         <label for="targetYield">Efficient Frontier (target yield)</label><br>
         <br>
-        <label>Selected strategy: </label>
+        <label>Ausgewählte Strategie: </label>
         <input type="text" id="input_strategy" name="strategy" value="" readonly>
         <br>
         <br>
-        <input type="range" min="0.1" max="50" value="25" step="0.1" class="slider" onchange="updateTextInput(this.value);">
+        <input type="range" min="0.1" max="20" value="10" step="0.1" class="slider" onchange="updateTextInput(this.value);">
         <br>
         <label for="input_targetReturn">Zielrendite in %: </label>
         <input type="text" id="input_targetReturn" name="targetReturn" value="" readonly>
@@ -179,6 +179,14 @@
 
     <form action="ResetServlet" method="get">
         <button type="submit">Reset</button>
+    </form>
+
+    <br>
+
+    <form action="info.jsp">
+        <input Name="infoButton" type="image" src="info_button.png" width="5%" height="2.5%">
+        <br>
+        <label>(info)</label>
     </form>
 
 </div>

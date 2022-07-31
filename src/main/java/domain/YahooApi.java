@@ -30,7 +30,7 @@ public class YahooApi {
      * @param ticker The ticker of the instrument.
      */
     public void priceImport(String ticker){
-        String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=5d&symbols="+ticker;
+        String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=3mo&symbols="+ticker;
 
         //Connect to Yahoo API
         HttpRequest request = HttpRequest.newBuilder()

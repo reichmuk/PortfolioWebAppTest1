@@ -35,6 +35,49 @@ public class SqlTable {
     }
 
     /**
+     * Method that performs a cleanup if timeStamps in the different instruments are not consistent.
+     */
+    public void timeStampCleanup(){
+        ArrayList<String> tickerList = getPortfolioTickers(Constants.CURRENT);
+        String startTicker = tickerList.get(0);
+        ArrayList<Double> startTickerTimestampList = getPriceList(Constants.TIMESTAMP,startTicker);
+
+        //Generate list that consists only values which also exist in all other lists
+        for(String ticker : tickerList){
+            ArrayList<Double> tickerTimestampList = getPriceList(Constants.TIMESTAMP,ticker);
+            startTickerTimestampList.retainAll(tickerTimestampList);
+        }
+
+        //Remove all values from DB which don't exist in main-list
+        for(String ticker : tickerList){
+            ArrayList<Double> tickerTimestampList = getPriceList(Constants.TIMESTAMP,ticker);
+            tickerTimestampList.removeAll(startTickerTimestampList);
+            for(double timeStamp : tickerTimestampList){
+                removePrice((int)timeStamp,ticker);
+            }
+        }
+    }
+
+    /**
+     * Method to remove a price from the DB.
+     * @param ticker The ticker of the instrument
+     * @param timeStamp The timestamp (date) of the price
+     */
+    public void removePrice(int timeStamp, String ticker){
+        String tickerString = "\""+ticker+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "DELETE from prices where time_stamp="+timeStamp+" and ticker="+tickerString+";";
+        System.out.println(sqlCommand);
+
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Method to get a value from the instrument table.
      * @param selectColumn The ticker of the instrument
      * @param whereColumn The respective column (ticker, ccy, name, country)
@@ -56,7 +99,6 @@ public class SqlTable {
         }
         return result;
     }
-
 
     /**
      * Method to store a price in the MySQL-DB.
@@ -103,7 +145,7 @@ public class SqlTable {
         }
         if(column==Constants.PRICE){
             return priceList;
-        } else {return timeStampList;}
+        }else {return timeStampList;}
     }
 
     /**
@@ -248,7 +290,6 @@ public class SqlTable {
             e.printStackTrace();
         }
         return ticker;
-
     }
 
     /**
@@ -275,7 +316,6 @@ public class SqlTable {
         }
         return portfolioWeight;
     }
-
 
     /**
      * Method that returns the quantity of an instrument from a given portfolio.
@@ -324,7 +364,6 @@ public class SqlTable {
         }
         return portfolioValue;
     }
-
 
     /**
      * Method that returns a list with all tickers of a given portfolio.

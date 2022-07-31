@@ -1,5 +1,6 @@
 package domain;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import constants.Constants;
 import org.apache.commons.lang3.ArrayUtils;
@@ -28,6 +29,7 @@ public class Calculations {
         sqlTable = Control.getSqlTable();
         strategy = "";
     }
+
 
     /**
      * Method that calculates the portfolioValue of the respective portfolio.

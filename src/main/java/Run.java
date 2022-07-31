@@ -17,13 +17,18 @@ public class Run {
             Connection conn = DriverManager.getConnection(url,user,password);
             Statement statement = conn.createStatement();
             conn.close();
-
-
-
             Control control = new Control();
             SqlTable sqlTable = Control.getSqlTable();
             Calculations calculations = Control.getCalculations();
-            calculations.calcCorrelations("current");
+
+            //sqlTable.removePrice(1659078000,"SREN.SW");
+            sqlTable.timeStampCleanup();
+
+
+
+
+
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
