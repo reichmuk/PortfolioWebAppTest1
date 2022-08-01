@@ -219,10 +219,75 @@ public class Calculations {
     }
 
     /**
-     * Method that calculates the optimal portfolio.
-     * The results (new weights & new quantities) are stored in the MySQL-DB in the "portfolio" table (portfolio: minRisk or targetReturn).
+     * Method that calculates the minRisk portfolio.
+     * The results (new weights & new quantities) are stored in the MySQL-DB in the "portfolio" table (portfolio: minRisk).
      * @param portfolio The "current" portfolio.
-     * @param targetYield The condition minRisk=0 or targetReturn=x.
+     */
+    public void calcMinRiskPortfolio(String portfolio){
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(Constants.CURRENT);
+        int countInstruments = countPortfolioInstruments(Constants.CURRENT);
+        int matrixSize = countInstruments+1;
+        double lagrangeMatrix[][] = new double[matrixSize][matrixSize];
+        double conditions[] = new double[matrixSize];
+        int counter1 = 0;
+        int counter2 = 0;
+        int counter3 = 0;
+
+        //Write covariances into lagrangeMatrix[][]
+        for(String ticker : tickerList){
+            double stdev1 = sqlTable.getMetricSummaryValue(ticker,Constants.STANDARDDEVIATION);
+
+            for (String ticker2 : tickerList){
+                double stdev2 = sqlTable.getMetricSummaryValue(ticker2,Constants.STANDARDDEVIATION);
+                String correlationString = "Correl-"+ticker+"-"+ticker2;
+                double correlation = sqlTable.getMetricSummaryValue(ticker,correlationString);
+                double varianceCovariance = stdev1*stdev2*correlation;
+                lagrangeMatrix[counter1][counter2]=varianceCovariance;
+                counter1++;
+            }
+            counter1=0;
+            counter2++;
+        }
+
+        //Write returns into lagrangeMatrix[][]
+        counter1 = 0;
+        counter3 = countInstruments;
+
+        for(String ticker : tickerList){
+            lagrangeMatrix[counter1][counter3] = 1;
+            lagrangeMatrix[counter3][counter1] = 1;
+            counter1++;
+        }
+        lagrangeMatrix[counter3][counter3] = 0;
+
+        //Write values into conditions[]
+        for(int i = 0; i<countInstruments; i++){
+            conditions[i] = 0;
+        }
+
+        //Calculate new weights in matrices
+        conditions[countInstruments]=1;
+        RealMatrix matrixConditions = MatrixUtils.createColumnRealMatrix(conditions);
+        RealMatrix matrixLagrange = MatrixUtils.createRealMatrix(lagrangeMatrix);
+        RealMatrix inverseMatrixLagrange = MatrixUtils.inverse(matrixLagrange);
+        RealMatrix actual = inverseMatrixLagrange.multiply(matrixConditions);
+
+        //Store new weights in DB
+        counter1=0;
+        for(String ticker : tickerList){
+            double newWeitght = actual.getEntry(counter1,0);
+            double price = sqlTable.getLatestPrice(ticker);
+            int newQuantity = calcInstrumentQuantity(Constants.CURRENT,newWeitght,price);
+            sqlTable.insertPortfolio(ticker,portfolio,newQuantity,newWeitght);
+            counter1++;
+        }
+    }
+
+    /**
+     * Method that calculates the optimal portfolio.
+     * The results (new weights & new quantities) are stored in the MySQL-DB in the "portfolio" table (portfolio: targetReturn).
+     * @param portfolio The "current" portfolio.
+     * @param targetYield The condition targetReturn=x.
      */
     public void calcOptimalPortfolio(String portfolio, double targetYield){
         ArrayList<String> tickerList = sqlTable.getPortfolioTickers(Constants.CURRENT);

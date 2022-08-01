@@ -148,7 +148,13 @@ public class MainServlet extends HttpServlet {
             calculations.calcCorrelations(Constants.CURRENT);
             calculations.calcPortfolioVolatility(Constants.CURRENT);
 
-            calculations.calcOptimalPortfolio(strategy,targetReturnCondition);
+            if(strategy.equals(Constants.MINRISK)){
+                calculations.calcMinRiskPortfolio(strategy);
+            }
+
+            if(strategy.equals(Constants.TARGETRETURN)){
+                calculations.calcOptimalPortfolio(strategy,targetReturnCondition);
+            }
 
             calculations.calcPortfolioValue(strategy);
             calculations.calcPortfolioReturn(strategy);

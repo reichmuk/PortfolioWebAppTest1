@@ -70,7 +70,7 @@
 
     <form action="MainServlet" method="post">
 
-        <table id="table_portfolio_eingabe">
+        <table id="table_portfolio_input">
 
             <!Column name>
             <tr>
@@ -144,8 +144,8 @@
 
         <input type="radio" id="minRisk" name="calc_strat" class="radio" value="minRisk" onchange="displayRadioValue(this.value)">
         <label for="minRisk">Min-Risk-Portfolio</label><br>
-        <input type="radio" id="targetYield" name="calc_strat" class="radio" value="targetReturn" onchange="displayRadioValue(this.value)">
-        <label for="targetYield">Efficient Frontier (target yield)</label><br>
+        <input type="radio" id="targetReturn" name="calc_strat" class="radio" value="targetReturn" onchange="displayRadioValue(this.value)">
+        <label for="targetReturn">Efficient Frontier (target return)</label><br>
         <br>
         <label>Ausgewählte Strategie: </label>
         <input type="text" id="input_strategy" name="strategy" value="" readonly>
@@ -184,7 +184,7 @@
     <br>
 
     <form action="info.jsp">
-        <input Name="infoButton" type="image" src="info_button.png" width="5%" height="2.5%">
+        <input name="infoButton" type="image" src="info_button.png" width="5%" height="2.5%">
         <br>
         <label>(info)</label>
     </form>
