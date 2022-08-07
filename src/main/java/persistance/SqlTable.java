@@ -1,6 +1,5 @@
 package persistance;
 import constants.Constants;
-
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -17,6 +16,10 @@ public class SqlTable {
      */
     public SqlTable(){
     }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // STARTUP - Methods
+    //------------------------------------------------------------------------------------------------------------------
 
     /**
      * Method that performs the connection to the MySQL-DB "instrumentDB".
@@ -58,23 +61,31 @@ public class SqlTable {
         }
     }
 
-    /**
-     * Method to remove a price from the DB.
-     * @param ticker The ticker of the instrument
-     * @param timeStamp The timestamp (date) of the price
-     */
-    public void removePrice(int timeStamp, String ticker){
-        String tickerString = "\""+ticker+"\"";
-        Connection connection = getConnection();
-        String sqlCommand = "DELETE from prices where time_stamp="+timeStamp+" and ticker="+tickerString+";";
-        System.out.println(sqlCommand);
+    //------------------------------------------------------------------------------------------------------------------
+    // QUERY - Methods
+    //------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Method that returns the ticker of a given instrument.
+     * @param instrument The name of the instrument
+     * @return returns instrument ticker
+     */
+    public String getInstrumentTicker(String instrument){
+        String instrumentName = "\""+instrument+"\"";
+        String ticker = "";
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT ticker from instruments where name="+instrumentName+";";
         try {
             Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                String value = resultSet.getString(Constants.TICKER);
+                ticker = value;
+            }
         }catch (SQLException e){
             e.printStackTrace();
         }
+        return ticker;
     }
 
     /**
@@ -101,21 +112,15 @@ public class SqlTable {
     }
 
     /**
-     * Method to store a price in the MySQL-DB.
+     * Method to to get the latest price of an instrument.
      * @param ticker The ticker of the instrument.
-     * @param timeStamp The timestamp (date) of the price
-     * @param price the price of the instrument
+     * @return returns the latest price
      */
-    public void insertPrice(String ticker, int timeStamp, double price){
-        String tickerString = "\""+ticker+"\"";
-        Connection connection = getConnection();
-        String sqlCommand = "INSERT INTO prices VALUES("+tickerString+","+timeStamp+","+price+");";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
+    public double getLatestPrice(String ticker){
+        ArrayList<Double> prices = getPriceList(Constants.PRICE,ticker);
+        int listSize = prices.size()-1;
+        double price = prices.get(listSize);
+        return price;
     }
 
     /**
@@ -149,38 +154,6 @@ public class SqlTable {
     }
 
     /**
-     * Method to to get the latest price of an instrument.
-     * @param ticker The ticker of the instrument.
-     * @return returns the latest price
-     */
-    public double getLatestPrice(String ticker){
-        ArrayList<Double> prices = getPriceList(Constants.PRICE,ticker);
-        int listSize = prices.size()-1;
-        double price = prices.get(listSize);
-        return price;
-    }
-
-    /**
-     * Method to store a metric (simpleReturn or steadyReturn) in the MySQL-DB table "metrics".
-     * @param ticker The ticker of the instrument.
-     * @param timeStamp The timeStamp of the respective metric
-     * @param metric The respective metric (simpleReturn or steadyReturn)
-     * @param value The metric-value of the respective ticker on the given timeStamp (date)
-     */
-    public void insertMetric(String ticker, int timeStamp, String metric, double value){
-        String tickerString = "\""+ticker+"\"";
-        String metricString = "\""+metric+"\"";
-        Connection connection = getConnection();
-        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+timeStamp+","+metricString+","+value+");";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * The method returns the respective metric-values of the entire Metric-List from the MySQL-DB.
      * @param metric The respective metric (simpleReturn or steadyReturn)
      * @param ticker The ticker of the instrument
@@ -203,6 +176,188 @@ public class SqlTable {
             e.printStackTrace();
         }
         return metricList;
+    }
+
+    /**
+     * Method to get a value from the metrics_summary table.
+     * @param ticker The ticker of the instrument
+     * @param metric The respective metric (avgSimpleReturn, avgSteadyReturn, standardDeviation, Correlation)
+     * @return returns the metricSummaryValue
+     */
+    public double getMetricSummaryValue(String ticker, String metric){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        double metricSummaryValue = 0;
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT value from metrics_summary where ticker="+tickerString+" && metric ="+metricString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                double value = Double.parseDouble(resultSet.getString(Constants.VALUE));
+                metricSummaryValue = value;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return metricSummaryValue;
+    }
+
+    /**
+     * Method that returns a list with all tickers of a given portfolio.
+     * @param portfolio The portfolio (current, minRisk, targetReturn)
+     * @return returns the tickerList
+     */
+    public ArrayList<String> getPortfolioTickers(String portfolio){
+        String portfolioString = "\""+portfolio+"\"";
+        ArrayList<String> tickerList = new ArrayList<String>();
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT ticker from portfolio where portfolio="+portfolioString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                String value = resultSet.getString(Constants.TICKER);
+                tickerList.add(value);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return tickerList;
+    }
+
+    /**
+     * Method that returns the quantity of an instrument from a given portfolio.
+     * @param ticker The ticker of the instrument
+     * @param portfolio The portfolio (current, minRisk, targetReturn)
+     * @return returns the portfolioQuantity
+     */
+    public int getPortfolioQuantity(String ticker, String portfolio){
+        String tickerString = "\""+ticker+"\"";
+        String portfolioString = "\""+portfolio+"\"";
+        int portfolioQuantity = 0;
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT quantity from portfolio where ticker="+tickerString+" && portfolio ="+portfolioString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                int value = Integer.parseInt(resultSet.getString(Constants.QUANTITY));
+                portfolioQuantity = value;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return portfolioQuantity;
+    }
+
+    /**
+     * Method that returns the weight of an instrument from a given portfolio.
+     * @param ticker The ticker of the instrument
+     * @param portfolio The portfolio (current, minRisk, targetReturn)
+     * @return returns the portfolioWeight
+     */
+    public double getPortfolioWeight(String ticker, String portfolio){
+        String tickerString = "\""+ticker+"\"";
+        String portfolioString = "\""+portfolio+"\"";
+        double portfolioWeight = 0;
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT weight from portfolio where ticker="+tickerString+" && portfolio ="+portfolioString+";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                double value = Double.parseDouble(resultSet.getString(Constants.WEIGHT));
+                portfolioWeight = value;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return portfolioWeight;
+    }
+
+    /**
+     * Method that returns the value of the portfolio.
+     * @return returns the portfolioValue
+     */
+    public double getPortfolioValue(String portfolio){
+        double portfolioValue = 0;
+        String portfolioString = "\""+portfolio+"PortfolioValue"+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT value from metrics_summary where ticker=\"PORTFOLIO\" && metric="+portfolioString+";";
+        //String sqlCommand = "SELECT value from metrics_summary where ticker=\"PORTFOLIO\" && metric=\"portfolioValue\";";
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                double value = Double.parseDouble(resultSet.getString(Constants.VALUE));
+                portfolioValue = value;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return portfolioValue;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // MANIPULATION - Methods
+    //------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Method to store a price in the MySQL-DB.
+     * @param ticker The ticker of the instrument.
+     * @param timeStamp The timestamp (date) of the price
+     * @param price the price of the instrument
+     */
+    public void insertPrice(String ticker, int timeStamp, double price){
+        String tickerString = "\""+ticker+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "INSERT INTO prices VALUES("+tickerString+","+timeStamp+","+price+");";
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method to remove a price from the DB.
+     * @param ticker The ticker of the instrument
+     * @param timeStamp The timestamp (date) of the price
+     */
+    public void removePrice(int timeStamp, String ticker){
+        String tickerString = "\""+ticker+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "DELETE from prices where time_stamp="+timeStamp+" and ticker="+tickerString+";";
+        System.out.println(sqlCommand);
+
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method to store a metric (simpleReturn or steadyReturn) in the MySQL-DB table "metrics".
+     * @param ticker The ticker of the instrument.
+     * @param timeStamp The timeStamp of the respective metric
+     * @param metric The respective metric (simpleReturn or steadyReturn)
+     * @param value The metric-value of the respective ticker on the given timeStamp (date)
+     */
+    public void insertMetric(String ticker, int timeStamp, String metric, double value){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+timeStamp+","+metricString+","+value+");";
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -245,150 +400,6 @@ public class SqlTable {
     }
 
     /**
-     * Method to get a value from the metrics_summary table.
-     * @param ticker The ticker of the instrument
-     * @param metric The respective metric (avgSimpleReturn, avgSteadyReturn, standardDeviation, Correlation)
-     * @return returns the metricSummaryValue
-     */
-    public double getMetricSummaryValue(String ticker, String metric){
-        String tickerString = "\""+ticker+"\"";
-        String metricString = "\""+metric+"\"";
-        double metricSummaryValue = 0;
-        Connection connection = getConnection();
-        String sqlCommand = "SELECT value from metrics_summary where ticker="+tickerString+" && metric ="+metricString+";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                double value = Double.parseDouble(resultSet.getString(Constants.VALUE));
-                metricSummaryValue = value;
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return metricSummaryValue;
-    }
-
-    /**
-     * Method that returns the ticker of a given instrument.
-     * @param instrument The name of the instrument
-     * @return returns instrument ticker
-     */
-    public String getInstrumentTicker(String instrument){
-        String instrumentName = "\""+instrument+"\"";
-        String ticker = "";
-        Connection connection = getConnection();
-        String sqlCommand = "SELECT ticker from instruments where name="+instrumentName+";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                String value = resultSet.getString(Constants.TICKER);
-                ticker = value;
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return ticker;
-    }
-
-    /**
-     * Method that returns the weight of an instrument from a given portfolio.
-     * @param ticker The ticker of the instrument
-     * @param portfolio The portfolio (current, minRisk, targetReturn)
-     * @return returns the portfolioWeight
-     */
-    public double getPortfolioWeight(String ticker, String portfolio){
-        String tickerString = "\""+ticker+"\"";
-        String portfolioString = "\""+portfolio+"\"";
-        double portfolioWeight = 0;
-        Connection connection = getConnection();
-        String sqlCommand = "SELECT weight from portfolio where ticker="+tickerString+" && portfolio ="+portfolioString+";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                double value = Double.parseDouble(resultSet.getString(Constants.WEIGHT));
-                portfolioWeight = value;
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return portfolioWeight;
-    }
-
-    /**
-     * Method that returns the quantity of an instrument from a given portfolio.
-     * @param ticker The ticker of the instrument
-     * @param portfolio The portfolio (current, minRisk, targetReturn)
-     * @return returns the portfolioQuantity
-     */
-    public int getPortfolioQuantity(String ticker, String portfolio){
-        String tickerString = "\""+ticker+"\"";
-        String portfolioString = "\""+portfolio+"\"";
-        int portfolioQuantity = 0;
-        Connection connection = getConnection();
-        String sqlCommand = "SELECT quantity from portfolio where ticker="+tickerString+" && portfolio ="+portfolioString+";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                int value = Integer.parseInt(resultSet.getString(Constants.QUANTITY));
-                portfolioQuantity = value;
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return portfolioQuantity;
-    }
-
-    /**
-     * Method that returns the value of the portfolio.
-     * @return returns the portfolioValue
-     */
-    public double getPortfolioValue(String portfolio){
-        double portfolioValue = 0;
-        String portfolioString = "\""+portfolio+"PortfolioValue"+"\"";
-        Connection connection = getConnection();
-        String sqlCommand = "SELECT value from metrics_summary where ticker=\"PORTFOLIO\" && metric="+portfolioString+";";
-        //String sqlCommand = "SELECT value from metrics_summary where ticker=\"PORTFOLIO\" && metric=\"portfolioValue\";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                double value = Double.parseDouble(resultSet.getString(Constants.VALUE));
-                portfolioValue = value;
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return portfolioValue;
-    }
-
-    /**
-     * Method that returns a list with all tickers of a given portfolio.
-     * @param portfolio The portfolio (current, minRisk, targetReturn)
-     * @return returns the tickerList
-     */
-    public ArrayList<String> getPortfolioTickers(String portfolio){
-        String portfolioString = "\""+portfolio+"\"";
-        ArrayList<String> tickerList = new ArrayList<String>();
-        Connection connection = getConnection();
-        String sqlCommand = "SELECT ticker from portfolio where portfolio="+portfolioString+";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                String value = resultSet.getString(Constants.TICKER);
-                tickerList.add(value);
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return tickerList;
-    }
-
-    /**
      * Method that resets a table in the MySQL-DB.
      * @param table The table to be reset
      */
@@ -402,5 +413,4 @@ public class SqlTable {
             e.printStackTrace();
         }
     }
-
 }

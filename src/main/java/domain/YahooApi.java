@@ -27,6 +27,7 @@ public class YahooApi {
 
     /**
      * Method that imports the historical prices from the respective instrument.
+     * The historical prices are stored in the MySQL-DB.
      * @param ticker The ticker of the instrument.
      */
     public void priceImport(String ticker){

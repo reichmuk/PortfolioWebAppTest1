@@ -30,36 +30,9 @@ public class Calculations {
         strategy = "";
     }
 
-
-    /**
-     * Method that calculates the portfolioValue of the respective portfolio.
-     * The result is stored in the MySQL-DB "metrics_summary" table.
-     * @param portfolio The "current" portfolio.
-     */
-    public void calcPortfolioValue(String portfolio){
-        double portfolioValue = 0;
-        String metricName = portfolio+"PortfolioValue";
-        ArrayList<String> instruments = sqlTable.getPortfolioTickers(portfolio);
-
-        for(String ticker:instruments){
-            double quantity = sqlTable.getPortfolioQuantity(ticker,portfolio);
-            double price = sqlTable.getLatestPrice(ticker);
-            portfolioValue = portfolioValue + (quantity*price);
-        }
-        sqlTable.insertMetricSummary(Constants.PORTFOLIO,metricName,portfolioValue);
-    }
-
-    /**
-     * Method that calculates the portfolioQuantity based on the give weight.
-     * @param weight The weight of the respective instrument in the portfolio.
-     * @return returns the instrumentQuantity
-     */
-    public int calcInstrumentQuantity(String portfolio, double weight, double price){
-        double portfolioValue = sqlTable.getPortfolioValue(portfolio);
-        double instrumentQuantity = (portfolioValue*weight)/price;
-        return (int) instrumentQuantity;
-    }
-
+    //------------------------------------------------------------------------------------------------------------------
+    // Calculations single instrument
+    //------------------------------------------------------------------------------------------------------------------
 
     /**
      * Method that calculates the simpleReturn and steadyReturn for each instrument for each day in the data-sample.
@@ -78,6 +51,27 @@ public class Calculations {
                 int timeStampInt = (int) timeStamp;
                 sqlTable.insertMetric(ticker,timeStampInt,Constants.SIMPLERETURN,simpleReturn);
                 sqlTable.insertMetric(ticker,timeStampInt,Constants.STEADYRETURN,steadyReturn);
+            }
+        }
+    }
+
+    /**
+     * Method that calculates the correlations between each instrument.
+     * The results are stored in the MySQL-DB in the "metrics_summary" table (metric: Correl-Instrument1-Instrument2).
+     * @param portfolio The "current" portfolio.
+     */
+    public void calcCorrelations(String portfolio){
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+
+        for(String ticker1 : tickerList){
+            for(String ticker2 : tickerList){
+                String metric = "Correl-"+ticker1+"-"+ticker2;
+                ArrayList<Double> returnList1 = sqlTable.getMetricList(Constants.STEADYRETURN,ticker1);
+                ArrayList<Double> returnList2 = sqlTable.getMetricList(Constants.STEADYRETURN,ticker2);
+                double[] list1 = ArrayUtils.toPrimitive(returnList1.toArray(new Double[0]));
+                double[] list2 = ArrayUtils.toPrimitive(returnList2.toArray(new Double[0]));
+                double correlation = new PearsonsCorrelation().correlation(list1,list2);
+                sqlTable.insertMetricSummary(ticker1,metric,correlation);
             }
         }
     }
@@ -114,25 +108,27 @@ public class Calculations {
         sqlTable.insertMetricSummary(ticker,Constants.STANDARDDEVIATION,standardDeviation);
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Calculations portfolio level
+    //------------------------------------------------------------------------------------------------------------------
+
+
     /**
-     * Method that calculates the correlations between each instrument.
-     * The results are stored in the MySQL-DB in the "metrics_summary" table (metric: Correl-Instrument1-Instrument2).
+     * Method that calculates the portfolioValue of the respective portfolio.
+     * The result is stored in the MySQL-DB "metrics_summary" table.
      * @param portfolio The "current" portfolio.
      */
-    public void calcCorrelations(String portfolio){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+    public void calcPortfolioValue(String portfolio){
+        double portfolioValue = 0;
+        String metricName = portfolio+"PortfolioValue";
+        ArrayList<String> instruments = sqlTable.getPortfolioTickers(portfolio);
 
-        for(String ticker1 : tickerList){
-            for(String ticker2 : tickerList){
-                String metric = "Correl-"+ticker1+"-"+ticker2;
-                ArrayList<Double> returnList1 = sqlTable.getMetricList(Constants.STEADYRETURN,ticker1);
-                ArrayList<Double> returnList2 = sqlTable.getMetricList(Constants.STEADYRETURN,ticker2);
-                double[] list1 = ArrayUtils.toPrimitive(returnList1.toArray(new Double[0]));
-                double[] list2 = ArrayUtils.toPrimitive(returnList2.toArray(new Double[0]));
-                double correlation = new PearsonsCorrelation().correlation(list1,list2);
-                sqlTable.insertMetricSummary(ticker1,metric,correlation);
-            }
+        for(String ticker:instruments){
+            double quantity = sqlTable.getPortfolioQuantity(ticker,portfolio);
+            double price = sqlTable.getLatestPrice(ticker);
+            portfolioValue = portfolioValue + (quantity*price);
         }
+        sqlTable.insertMetricSummary(Constants.PORTFOLIO,metricName,portfolioValue);
     }
 
     /**
@@ -152,21 +148,6 @@ public class Calculations {
         }
 
         sqlTable.insertMetricSummary(Constants.PORTFOLIO,metricName,portfolioReturn);
-    }
-
-    /**
-     * Method that counts the number of instruments in the portfolio.
-     * @param portfolio The "current" portfolio.
-     */
-    public int countPortfolioInstruments(String portfolio){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
-        int counter = 0;
-
-        for(String value : tickerList){
-            counter++;
-        }
-
-        return counter;
     }
 
     /**
@@ -357,6 +338,36 @@ public class Calculations {
             sqlTable.insertPortfolio(ticker,portfolio,newQuantity,newWeitght);
             counter1++;
         }
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Support methods
+    //------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Method that calculates the portfolioQuantity based on the give weight.
+     * @param weight The weight of the respective instrument in the portfolio.
+     * @return returns the instrumentQuantity
+     */
+    public int calcInstrumentQuantity(String portfolio, double weight, double price){
+        double portfolioValue = sqlTable.getPortfolioValue(portfolio);
+        double instrumentQuantity = (portfolioValue*weight)/price;
+        return (int) instrumentQuantity;
+    }
+
+    /**
+     * Method that counts the number of instruments in the portfolio.
+     * @param portfolio The "current" portfolio.
+     */
+    public int countPortfolioInstruments(String portfolio){
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+        int counter = 0;
+
+        for(String value : tickerList){
+            counter++;
+        }
+
+        return counter;
     }
 
     /**

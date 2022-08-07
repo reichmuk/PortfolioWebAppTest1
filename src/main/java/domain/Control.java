@@ -4,7 +4,7 @@ import persistance.SqlTable;
 
 /**
  * PortfolioWebApp - Main Class
- * Contains GETTER and SETTER for each class.
+ * Contains GETTER-methods for each class.
  * @author Kevin Reichmuth
  * @version 31.08.2022
  */
