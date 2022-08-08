@@ -1,8 +1,8 @@
 <%--
   Created by IntelliJ IDEA.
   User: kevin.reichmuth
-  Date: 23.07.22
-  Time: 7:18 PM
+  Date: 31.08.2022
+  Time: 08:00 AM
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -25,7 +25,7 @@
         <p>Die Anwendung hat zwei wesentliche Aufgaben:
         <p>
             Erstens, ein bestehendes Portfolio analysieren zu können (Portfoliorendite, Portfoliovolatilität) und
-            zweitens, eine Portfolio-Optimierung nach Markowitz berechnen zu können (Efficient Frontier, Minimum-Risk-Portfolio).
+            zweitens, eine Portfolio-Optimierung nach Markowitz berechnen zu können (Efficient Frontier- und Minimum-Risk-Portfolio).
         </p>
 
         <p>
@@ -42,9 +42,9 @@
         <p>
             Die Webanwendung besteht aus drei Seiten, einer Start-Seite, einer Info-Seite und einer Resultat-Seite.
             Auf der Startseite kann der Benutzer sein Musterportfolio (Titel und Stückzahl) erfassen.
-            Die verfügbaren Wertpapiere "statischen Daten" sind auf Aktien der Teilnehmer der Schweizer Indizes (SMI & SPI) beschränkt.
+            Die verfügbaren Wertpapiere "statische Daten" sind auf Aktien der Teilnehmer der Schweizer Indizes (SMI) beschränkt.
             Der Benutzer hat die Möglichkeit, zwischen zwei verschiedenen Berechnungsmethoden. Es stehen die Optionen «Min-Risk-Portfolio»
-            und «Efficient-Frontier (target return)» zur Verfügung. Bei der Variante «Efficient-Frontier (target return)» benötigt es zudem die Wahl
+            und «Efficient Frontier (target return)» zur Verfügung. Bei der Variante «Efficient Frontier (target return)» benötigt es zudem die Wahl
             einer Zielrendite. Mit der Betätigung des Submit-Buttons werden die Berechnungen gestartet und anschliessend auf der Resultat-Seite angezeigt.
             Die Resultat-Seite ist unterteilt in eine Übersicht zum aktuellen Portfolio, den notwendigen Anpassungen pro Instrument und einer
             Übersicht zum optialen Portfolio. Mit der Betätigung des "Back" Button gelangt man zurück auf die Start-Seite.
@@ -63,7 +63,7 @@
             - Min-Risk-Portfolio: Eine Zielrendite wird nicht benötigt.
         </p>
         <p>
-            - Efficient-Frontier (target return): Eine Zielrendite ist zwingend notwendig.
+            - Efficient Frontier (target return): Eine Zielrendite ist zwingend notwendig.
         </p>
     </div>
 

@@ -11,13 +11,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+
+/**
+ * The MainServlet is launched with the submit-button on the index.jsp page.
+ * The Servlet initiates the control-clas, does a DB-Reset, performs entry-validations, starts the YH-API price import,
+ * Creates the "current" portfolio, does a timestamp cleanup, starts the calculations and forwards the user to the
+ * Result-Page (result.jsp).
+ * @author Kevin Reichmuth
+ * @version 31.08.2022
+ */
+
 @WebServlet(name = "MainServlet", value = "/MainServlet")
 public class MainServlet extends HttpServlet {
+
+    /**
+     * doGet Method is not used in this Servlet!
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
     }
 
+    /**
+     * doPost-Method performs the tasks mentioned in the description at the start of this Servlet.
+     * @param request The Http-Servlet-Request
+     * @param response The Http-Servlet-Response
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 

@@ -25,4 +25,16 @@ public class Constants {
     public static final String WEIGHT = "weight";
     public static final String TICKER = "ticker";
     public static final String QUANTITY = "quantity";
+    public static final String CCY = "ccy";
+    public static final String NAME = "name";
+    public static final String CURRENTPORTFOLIOVALUE = "currentPortfolioValue";
+    public static final String CURRENTPORTFOLIORETURN = "currentPortfolioReturn";
+    public static final String CURRENTPORTFOLIOVOLATILITY = "currentPortfolioVolatility";
+    public static final String TARGETRETURNPORTFOLIOVALUE = "targetReturnPortfolioValue";
+    public static final String TARGETRETURNPORTFOLIORETURN = "targetReturnPortfolioReturn";
+    public static final String TARGETRETURNPORTFOLIOVOLATILITY = "targetReturnPortfolioVolatility";
+    public static final String MINRISKPORTFOLIOVALUE = "minRiskPortfolioValue";
+    public static final String MINRISKPORTFOLIORETURN = "minRiskPortfolioReturn";
+    public static final String MINRISKPORTFOLIOVOLATILITY = "minRiskPortfolioVolatility";
+
 }

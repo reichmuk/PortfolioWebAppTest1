@@ -6,8 +6,8 @@
 <%@ page import="domain.Control" %><%--
   Created by IntelliJ IDEA.
   User: kevin.reichmuth
-  Date: 16.07.22
-  Time: 2:48 PM
+  Date: 31.08.2022
+  Time: 08:00 AM
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>

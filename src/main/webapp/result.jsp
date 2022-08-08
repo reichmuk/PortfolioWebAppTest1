@@ -1,8 +1,8 @@
 <%--
   Created by IntelliJ IDEA.
   User: kevin.reichmuth
-  Date: 09.07.22
-  Time: 9:13 AM
+  Date: 31.08.2022
+  Time: 08:00 AM
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -12,6 +12,7 @@
 <%@ page import="domain.Control" %>
 <%@ page import="domain.Calculations" %>
 <%@ page import="java.text.DecimalFormat" %>
+<%@ page import="constants.Constants" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +41,7 @@
         //Variables
         SqlTable sqlTable = Control.getSqlTable();
         Calculations calculations = Control.getCalculations();
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers("current");
+        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(Constants.CURRENT);
         String strategy = calculations.getStrategy();
         int tickerListSize = tickerList.size();
         DecimalFormat df2 = new DecimalFormat("#.00");
@@ -53,11 +54,11 @@
         <table class="table_summary_values">
 
             <%
-                int intCurrentPortfolioValue = (int) sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioValue");
+                int intCurrentPortfolioValue = (int) sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIOVALUE);
                 String currentPortfolioValue = String.format("%,d",intCurrentPortfolioValue);
                 DecimalFormat df = new DecimalFormat("#.000000");
-                String currentPortfolioReturn = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioReturn")*100)+"%";
-                String currentPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","currentPortfolioVolatility")*100)+"%";
+                String currentPortfolioReturn = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIORETURN)*100)+"%";
+                String currentPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIOVOLATILITY)*100)+"%";
             %>
 
             <tr>
@@ -107,21 +108,21 @@
 
                     if(tickerListSize>0){
                         ticker01 = tickerList.get(0);
-                        instrument01 = sqlTable.getInstrumentData("name","ticker",ticker01);
-                        qty01 = sqlTable.getPortfolioQuantity(ticker01,"current");
-                        ccy01 = sqlTable.getInstrumentData("ccy","ticker",ticker01);
+                        instrument01 = sqlTable.getInstrumentData(Constants.NAME,Constants.TICKER,ticker01);
+                        qty01 = sqlTable.getPortfolioQuantity(ticker01,Constants.CURRENT);
+                        ccy01 = sqlTable.getInstrumentData(Constants.CCY,Constants.TICKER,ticker01);
                         price01 = sqlTable.getLatestPrice(ticker01);
-                        weight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,"current")*100)+"%";
+                        weight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,Constants.CURRENT)*100)+"%";
                         // UPDATE minRisk or targetReturn
-                        if(strategy.equals("targetReturn")){
-                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,"targetReturn");
-                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,"targetReturn")*100)+"%";
+                        if(strategy.equals(Constants.TARGETRETURN)){
+                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,Constants.TARGETRETURN);
+                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,Constants.TARGETRETURN)*100)+"%";
                             trade01 = optQty01-qty01;
                         }
 
-                        if(strategy.equals("minRisk")){
-                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,"minRisk");
-                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,"minRisk")*100)+"%";
+                        if(strategy.equals(Constants.MINRISK)){
+                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,Constants.MINRISK);
+                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,Constants.MINRISK)*100)+"%";
                             trade01 = optQty01-qty01;
                         }
                     }
@@ -171,21 +172,21 @@
 
                     if(tickerListSize>1){
                         ticker02 = tickerList.get(1);
-                        instrument02 = sqlTable.getInstrumentData("name","ticker",ticker02);
-                        qty02 = sqlTable.getPortfolioQuantity(ticker02,"current");
-                        ccy02 = sqlTable.getInstrumentData("ccy","ticker",ticker02);
+                        instrument02 = sqlTable.getInstrumentData(Constants.NAME,Constants.TICKER,ticker02);
+                        qty02 = sqlTable.getPortfolioQuantity(ticker02,Constants.CURRENT);
+                        ccy02 = sqlTable.getInstrumentData(Constants.CCY,Constants.TICKER,ticker02);
                         price02 = sqlTable.getLatestPrice(ticker02);
-                        weight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,"current")*100)+"%";
+                        weight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,Constants.CURRENT)*100)+"%";
                         // UPDATE minRisk or targetReturn
-                        if(strategy.equals("targetReturn")){
-                            optQty02 = sqlTable.getPortfolioQuantity(ticker02,"targetReturn");
-                            optWeight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,"targetReturn")*100)+"%";
+                        if(strategy.equals(Constants.TARGETRETURN)){
+                            optQty02 = sqlTable.getPortfolioQuantity(ticker02,Constants.TARGETRETURN);
+                            optWeight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,Constants.TARGETRETURN)*100)+"%";
                             trade02 = optQty02-qty02;
                         }
 
-                        if(strategy.equals("minRisk")){
-                            optQty02 = sqlTable.getPortfolioQuantity(ticker02,"minRisk");
-                            optWeight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,"minRisk")*100)+"%";
+                        if(strategy.equals(Constants.MINRISK)){
+                            optQty02 = sqlTable.getPortfolioQuantity(ticker02,Constants.MINRISK);
+                            optWeight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,Constants.MINRISK)*100)+"%";
                             trade02 = optQty02-qty02;
                         }
                     }
@@ -235,21 +236,21 @@
 
                     if(tickerListSize>2){
                         ticker03 = tickerList.get(2);
-                        instrument03 = sqlTable.getInstrumentData("name","ticker",ticker03);
-                        qty03 = sqlTable.getPortfolioQuantity(ticker03,"current");
-                        ccy03 = sqlTable.getInstrumentData("ccy","ticker",ticker03);
+                        instrument03 = sqlTable.getInstrumentData(Constants.NAME,Constants.TICKER,ticker03);
+                        qty03 = sqlTable.getPortfolioQuantity(ticker03,Constants.CURRENT);
+                        ccy03 = sqlTable.getInstrumentData(Constants.CCY,Constants.TICKER,ticker03);
                         price03 = sqlTable.getLatestPrice(ticker03);
-                        weight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,"current")*100)+"%";
+                        weight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,Constants.CURRENT)*100)+"%";
                         // UPDATE minRisk or targetReturn
-                        if(strategy.equals("targetReturn")){
-                            optQty03 = sqlTable.getPortfolioQuantity(ticker03,"targetReturn");
-                            optWeight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,"targetReturn")*100)+"%";
+                        if(strategy.equals(Constants.TARGETRETURN)){
+                            optQty03 = sqlTable.getPortfolioQuantity(ticker03,Constants.TARGETRETURN);
+                            optWeight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,Constants.TARGETRETURN)*100)+"%";
                             trade03 = optQty03-qty03;
                         }
 
-                        if(strategy.equals("minRisk")){
-                            optQty03 = sqlTable.getPortfolioQuantity(ticker03,"minRisk");
-                            optWeight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,"minRisk")*100)+"%";
+                        if(strategy.equals(Constants.MINRISK)){
+                            optQty03 = sqlTable.getPortfolioQuantity(ticker03,Constants.MINRISK);
+                            optWeight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,Constants.MINRISK)*100)+"%";
                             trade03 = optQty03-qty03;
                         }
                     }
@@ -298,16 +299,16 @@
                 String optimalPortfolioReturn = "";
                 String optimalPortfolioVolatility = "";
 
-                if(strategy.equals("targetReturn")){
-                    intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioValue");
-                    optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioReturn")*100)+"%";
-                    optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","targetReturnPortfolioVolatility")*100)+"%";
+                if(strategy.equals(Constants.TARGETRETURN)){
+                    intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIOVALUE);
+                    optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIORETURN)*100)+"%";
+                    optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIOVOLATILITY)*100)+"%";
                 }
 
-                if(strategy.equals("minRisk")){
-                    intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioValue");
-                    optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioReturn")*100)+"%";
-                    optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue("PORTFOLIO","minRiskPortfolioVolatility")*100)+"%";
+                if(strategy.equals(Constants.MINRISK)){
+                    intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIOVALUE);
+                    optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIORETURN)*100)+"%";
+                    optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIOVOLATILITY)*100)+"%";
                 }
                 String optimalPortfolioValue = String.format("%,d",intOptimalPortfolioValue);
 
