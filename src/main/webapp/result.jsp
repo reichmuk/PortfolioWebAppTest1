@@ -27,10 +27,6 @@
     <br>
     <p>Unten finden Sie Ihr aktuelles Portfolio und das Optimale Portfolio berechnet anhand der Markowitz Portfolio-Theorie!</p>
 
-    <script>
-       function topercentage(){
-        }
-    </script>
 
 </head>
 
@@ -57,6 +53,8 @@
                 int intCurrentPortfolioValue = (int) sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIOVALUE);
                 String currentPortfolioValue = String.format("%,d",intCurrentPortfolioValue);
                 DecimalFormat df = new DecimalFormat("#.000000");
+                double doubleCurrentPortfolioReturn = sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIORETURN);
+                double doubleCurrentPortfolioVolatility = sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIOVOLATILITY);
                 String currentPortfolioReturn = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIORETURN)*100)+"%";
                 String currentPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIOVOLATILITY)*100)+"%";
             %>
@@ -67,11 +65,11 @@
             </tr>
             <tr>
                 <td><label for="portfolioReturnCurrent">Portfoliorendite in % (aktuell): </label></td>
-                <td><input type="text" id="portfolioReturnCurrent" class="input_data" pattern="[0-9]+" value=<%=currentPortfolioReturn%> readonly></td>
+                <td><input type="text" id="portfolioReturnCurrent" class="input_data <%=doubleCurrentPortfolioReturn<0 ? "negative" : "" %>" value=<%=currentPortfolioReturn%> readonly></td>
             </tr>
             <tr>
                 <td><label for="portfolioVolatilityCurrent">Portfoliovolatilität in % (aktuell): </label></td>
-                <td><input type="text" id="portfolioVolatilityCurrent" class="input_data" pattern="[0-9]+" value=<%=currentPortfolioVolatility%> readonly></td>
+                <td><input type="text" id="portfolioVolatilityCurrent" class="input_data <%=doubleCurrentPortfolioVolatility<0 ? "negative" : "" %>" value=<%=currentPortfolioVolatility%> readonly></td>
             </tr>
 
         </table>
@@ -80,7 +78,6 @@
         <br>
 
         <table>
-
             <tr>
                 <th size="35">Titel</th>
                 <th size="15">Ticker</th>
@@ -93,197 +90,76 @@
                 <th size="10">Trade</th>
             </tr>
 
+            <%
+                for(int i = 0; i<tickerListSize;i++){
+            %>
             <tr>
                 <!-- Get tickerList and tickerListSize -->
                 <%
-                    String instrument01 = null;
-                    String ticker01 = null;
-                    int qty01 = 0;
-                    String ccy01 = null;
-                    double price01 = 0;
-                    String weight01 = null;
-                    int optQty01 = 0;
-                    String optWeight01 = null;
-                    int trade01 = 0;
+                    String instrument = null;
+                    String ticker = null;
+                    int qty = 0;
+                    String ccy = null;
+                    double price = 0;
+                    String weight = null;
+                    int optQty = 0;
+                    String optWeight = null;
+                    double doubleOptWeight = 0;
+                    int trade = 0;
 
-                    if(tickerListSize>0){
-                        ticker01 = tickerList.get(0);
-                        instrument01 = sqlTable.getInstrumentData(Constants.NAME,Constants.TICKER,ticker01);
-                        qty01 = sqlTable.getPortfolioQuantity(ticker01,Constants.CURRENT);
-                        ccy01 = sqlTable.getInstrumentData(Constants.CCY,Constants.TICKER,ticker01);
-                        price01 = sqlTable.getLatestPrice(ticker01);
-                        weight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,Constants.CURRENT)*100)+"%";
+                    ticker = tickerList.get(i);
+                    instrument = sqlTable.getInstrumentData(Constants.NAME,Constants.TICKER,ticker);
+                    qty = sqlTable.getPortfolioQuantity(ticker,Constants.CURRENT);
+                    ccy = sqlTable.getInstrumentData(Constants.CCY,Constants.TICKER,ticker);
+                    price = sqlTable.getLatestPrice(ticker);
+                    weight = df2.format(sqlTable.getPortfolioWeight(ticker,Constants.CURRENT)*100)+"%";
                         // UPDATE minRisk or targetReturn
                         if(strategy.equals(Constants.TARGETRETURN)){
-                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,Constants.TARGETRETURN);
-                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,Constants.TARGETRETURN)*100)+"%";
-                            trade01 = optQty01-qty01;
+                            optQty = sqlTable.getPortfolioQuantity(ticker,Constants.TARGETRETURN);
+                            optWeight = df2.format(sqlTable.getPortfolioWeight(ticker,Constants.TARGETRETURN)*100)+"%";
+                            doubleOptWeight = sqlTable.getPortfolioWeight(ticker,Constants.TARGETRETURN);
+                            trade = optQty-qty;
                         }
 
                         if(strategy.equals(Constants.MINRISK)){
-                            optQty01 = sqlTable.getPortfolioQuantity(ticker01,Constants.MINRISK);
-                            optWeight01 = df2.format(sqlTable.getPortfolioWeight(ticker01,Constants.MINRISK)*100)+"%";
-                            trade01 = optQty01-qty01;
+                            optQty = sqlTable.getPortfolioQuantity(ticker,Constants.MINRISK);
+                            optWeight = df2.format(sqlTable.getPortfolioWeight(ticker,Constants.MINRISK)*100)+"%";
+                            doubleOptWeight = sqlTable.getPortfolioWeight(ticker,Constants.MINRISK);
+                            trade = optQty-qty;
                         }
-                    }
                 %>
 
                 <td>
-                    <input type="text" name="instrument01" class="input_data_instrument" size="35" value="<%=instrument01%>" readonly>
+                    <input type="text" class="input_data_instrument" size="35" value="<%=instrument%>" readonly>
                 </td>
                 <td>
-                    <input type="text" name="ticker01" class="input_data" size="15" value=<%=ticker01%> readonly>
+                    <input type="text" class="input_data" size="15" value=<%=ticker%> readonly>
                 </td>
                 <td>
-                    <input type="text" name="qty01" class="input_data" size="10" pattern="[0-9]+" value=<%=qty01%> readonly>
+                    <input type="text" class="input_data" size="10" value=<%=qty%> readonly>
                 </td>
                 <td>
-                    <input type="text" name="ccy01" class="input_data" size="10" value=<%=ccy01%> readonly>
+                    <input type="text" class="input_data" size="10" value=<%=ccy%> readonly>
                 </td>
                 <td>
-                    <input type="text" name="price01" class="input_data" size="10" value=<%=price01%> readonly>
+                    <input type="text" class="input_data" size="10" value=<%=price%> readonly>
                 </td>
                 <td>
-                    <input type="text" name="weight01" class="input_data" size="15" pattern="[0-9]+" value=<%=weight01%> readonly>
+                    <input type="text" class="input_data" size="15" pattern="[0-9]+" value=<%=weight%> readonly>
                 </td>
                 <td>
-                    <input type="text" name="optQty01" class="input_data" size="10" pattern="[0-9]+" value=<%=optQty01%> readonly>
+                    <input type="text" class="input_data <%=optQty<0 ? "negative" : "" %>" size="10" value=<%=optQty%> readonly>
                 </td>
                 <td>
-                    <input type="text" name="optWeight01" class="input_data" size="15" pattern="[0-9]+" value=<%=optWeight01%> readonly>
+                    <input type="text" class="input_data <%=doubleOptWeight<0 ? "negative" : "" %>" size="15" value=<%=optWeight%> readonly>
                 </td>
                 <td>
-                    <input type="text" name="trade01" class="input_data" size="10" pattern="[0-9]+" value=<%=trade01%> readonly>
+                    <input type="text" class="input_data <%=trade<0 ? "negative" : "" %>" size="10" value=<%=trade%> readonly>
                 </td>
             </tr>
-
-            <tr>
-                <!-- Get tickerList and tickerListSize -->
-                <%
-                    String instrument02 = null;
-                    String ticker02 = null;
-                    int qty02 = 0;
-                    String ccy02 = null;
-                    double price02 = 0;
-                    String weight02 = null;
-                    int optQty02 = 0;
-                    String optWeight02 = null;
-                    int trade02 = 0;
-
-                    if(tickerListSize>1){
-                        ticker02 = tickerList.get(1);
-                        instrument02 = sqlTable.getInstrumentData(Constants.NAME,Constants.TICKER,ticker02);
-                        qty02 = sqlTable.getPortfolioQuantity(ticker02,Constants.CURRENT);
-                        ccy02 = sqlTable.getInstrumentData(Constants.CCY,Constants.TICKER,ticker02);
-                        price02 = sqlTable.getLatestPrice(ticker02);
-                        weight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,Constants.CURRENT)*100)+"%";
-                        // UPDATE minRisk or targetReturn
-                        if(strategy.equals(Constants.TARGETRETURN)){
-                            optQty02 = sqlTable.getPortfolioQuantity(ticker02,Constants.TARGETRETURN);
-                            optWeight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,Constants.TARGETRETURN)*100)+"%";
-                            trade02 = optQty02-qty02;
-                        }
-
-                        if(strategy.equals(Constants.MINRISK)){
-                            optQty02 = sqlTable.getPortfolioQuantity(ticker02,Constants.MINRISK);
-                            optWeight02 = df2.format(sqlTable.getPortfolioWeight(ticker02,Constants.MINRISK)*100)+"%";
-                            trade02 = optQty02-qty02;
-                        }
-                    }
-                %>
-
-                <td>
-                    <input type="text" name="instrument02" class="input_data_instrument" size="35" value="<%=instrument02%>" readonly>
-                </td>
-                <td>
-                    <input type="text" name="ticker02" class="input_data" size="15" value=<%=ticker02%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="qty02" class="input_data" size="10" pattern="[0-9]+" value=<%=qty02%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="ccy02" class="input_data" size="10" value=<%=ccy02%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="price02" class="input_data" size="10" value=<%=price02%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="weight02" class="input_data" size="15" pattern="[0-9]+" value=<%=weight02%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="optQty02" class="input_data" size="10" pattern="[0-9]+" value=<%=optQty02%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="optWeight02" class="input_data" size="15" pattern="[0-9]+" value=<%=optWeight02%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="trade02" class="input_data" size="10" pattern="[0-9]+" value=<%=trade02%> readonly>
-                </td>
-            </tr>
-
-            <tr>
-                <!-- Get tickerList and tickerListSize -->
-                <%
-                    String instrument03 = null;
-                    String ticker03 = null;
-                    int qty03 = 0;
-                    String ccy03 = null;
-                    double price03 = 0;
-                    String weight03 = "";
-                    int optQty03 = 0;
-                    String optWeight03 = "";
-                    int trade03 = 0;
-
-                    if(tickerListSize>2){
-                        ticker03 = tickerList.get(2);
-                        instrument03 = sqlTable.getInstrumentData(Constants.NAME,Constants.TICKER,ticker03);
-                        qty03 = sqlTable.getPortfolioQuantity(ticker03,Constants.CURRENT);
-                        ccy03 = sqlTable.getInstrumentData(Constants.CCY,Constants.TICKER,ticker03);
-                        price03 = sqlTable.getLatestPrice(ticker03);
-                        weight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,Constants.CURRENT)*100)+"%";
-                        // UPDATE minRisk or targetReturn
-                        if(strategy.equals(Constants.TARGETRETURN)){
-                            optQty03 = sqlTable.getPortfolioQuantity(ticker03,Constants.TARGETRETURN);
-                            optWeight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,Constants.TARGETRETURN)*100)+"%";
-                            trade03 = optQty03-qty03;
-                        }
-
-                        if(strategy.equals(Constants.MINRISK)){
-                            optQty03 = sqlTable.getPortfolioQuantity(ticker03,Constants.MINRISK);
-                            optWeight03 = df2.format(sqlTable.getPortfolioWeight(ticker03,Constants.MINRISK)*100)+"%";
-                            trade03 = optQty03-qty03;
-                        }
-                    }
-                %>
-
-                <td>
-                    <input type="text" name="instrument03" class="input_data_instrument" size="35" value="<%=instrument03%>" readonly>
-                </td>
-                <td>
-                    <input type="text" name="ticker03" class="input_data" size="15" value=<%=ticker03%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="qty03" class="input_data" size="10" pattern="[0-9]+" value=<%=qty03%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="ccy03" class="input_data" size="10" value=<%=ccy03%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="price03" class="input_data" size="10" value=<%=price03%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="weight03" class="input_data" size="15" pattern="[0-9]+" value=<%=weight03%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="optQty03" class="input_data" size="10" pattern="[0-9]+" value=<%=optQty03%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="optWeight03" class="input_data" size="15" pattern="[0-9]+" value=<%=optWeight03%> readonly>
-                </td>
-                <td>
-                    <input type="text" name="trade03" class="input_data" size="10" pattern="[0-9]+" value=<%=trade03%> readonly>
-                </td>
-            </tr>
+            <%
+                }
+            %>
 
         </table>
     </div>
@@ -298,17 +174,24 @@
                 int intOptimalPortfolioValue = 0;
                 String optimalPortfolioReturn = "";
                 String optimalPortfolioVolatility = "";
+                double doubleOptimalPortfolioReturn = 0;
+                double doubleOptimalPortfolioVolatility = 0;
 
                 if(strategy.equals(Constants.TARGETRETURN)){
                     intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIOVALUE);
                     optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIORETURN)*100)+"%";
                     optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIOVOLATILITY)*100)+"%";
+                    doubleOptimalPortfolioReturn = sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIORETURN);
+                    doubleOptimalPortfolioVolatility = sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIOVOLATILITY);
+
                 }
 
                 if(strategy.equals(Constants.MINRISK)){
                     intOptimalPortfolioValue = (int) sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIOVALUE);
                     optimalPortfolioReturn = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIORETURN)*100)+"%";
                     optimalPortfolioVolatility = df.format(sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIOVOLATILITY)*100)+"%";
+                    doubleOptimalPortfolioReturn = sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIORETURN);
+                    doubleOptimalPortfolioVolatility = sqlTable.getMetricSummaryValue(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIOVOLATILITY);
                 }
                 String optimalPortfolioValue = String.format("%,d",intOptimalPortfolioValue);
 
@@ -320,11 +203,11 @@
             </tr>
             <tr>
                 <td><label for="portfolioReturnOptimal">Portfoliorendite in % (optimal): </label></td>
-                <td><input type="text" id="portfolioReturnOptimal" class="input_data" pattern="[0-9]+" value=<%=optimalPortfolioReturn%> readonly></td>
+                <td><input type="text" id="portfolioReturnOptimal" class="input_data <%=doubleOptimalPortfolioReturn<0 ? "negative" : "" %>" value=<%=optimalPortfolioReturn%> readonly></td>
             </tr>
             <tr>
                 <td><label for="portfolioVolatilityOptimal">Portfoliovolatilität in % (optimal): </label></td>
-                <td><input type="text" id="portfolioVolatilityOptimal" class="input_data" pattern="[0-9]+" value=<%=optimalPortfolioVolatility%> readonly></td>
+                <td><input type="text" id="portfolioVolatilityOptimal" class="input_data <%=doubleOptimalPortfolioVolatility<0 ? "negative" : "" %>" value=<%=optimalPortfolioVolatility%> readonly></td>
             </tr>
         </table>
 

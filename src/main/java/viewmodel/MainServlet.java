@@ -91,7 +91,7 @@ public class MainServlet extends HttpServlet {
 
         //Save selected instruments in instrumentList, quantities in quantityList
         boolean quantityValidation = true;
-        for(int i =1; i<4;i++){ //ACHTUNG LOOP noch anpassen!
+        for(int i =0; i<5;i++){ //ACHTUNG LOOP noch anpassen!
             String instrument = "instrument"+i;
             String instrumentValue = request.getParameter(instrument).toString();
             String quantity = "quantity"+i;
@@ -116,7 +116,7 @@ public class MainServlet extends HttpServlet {
 
         //Perform instrument Validation (not empty and no duplicates)
         boolean instrumentValidation = true;
-        if(instrumentList.size()==0){
+        if(instrumentList.size()<2){
             instrumentValidation=false;
         }
         HashSet<String> instrumentSet = new HashSet<String>(instrumentList);
@@ -181,6 +181,8 @@ public class MainServlet extends HttpServlet {
 
             //Direct to result page
             response.sendRedirect("result.jsp");
+        } else {
+            response.sendRedirect("error.jsp?strategy="+strategyValidation+"&return="+targetReturnValidation+"&quantity="+quantityValidation+"&instrument="+instrumentValidation);
         }
 
         System.out.println("Strategy-Validation: "+strategyValidation);

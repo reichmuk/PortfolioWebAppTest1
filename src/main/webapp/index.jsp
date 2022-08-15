@@ -11,7 +11,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html lang="en">
+<htx    en">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
@@ -24,7 +24,6 @@
     <p>Bitte selektieren Sie ihre Titel und erfassen die dazugehörige Anzahl "QTY" im Bereich Musterportfolio.</p>
 
     <script>
-
         function inputValidation(){
             for(i=1; i<2; i++){
                 var id = "qty"+i
@@ -33,8 +32,6 @@
                 return false;
             }
         }
-
-
     </script>
 
 
@@ -63,7 +60,6 @@
 %>
 
 
-
 <!Portfolio Eingabe>
 <div>
     <h3>Portfolio Eingabe:</h3>
@@ -78,11 +74,17 @@
                 <th>Anzahl</th>
             </tr>
 
+
+            <! ACHTUNG Zähler 5 Instrumente>
+            <%
+                for(int i = 0; i<5;i++){
+            %>
+
             <!Row 1>
             <tr>
                 <td>
-                    <select name="instrument1" class="input">
-                        <option inst1="-1">Select Instrument</option>
+                    <select name="instrument<%=i%>" class="input">
+                        <option>Select Instrument</option>
                         <%
                             rs = stm.executeQuery(query);
                             while (rs.next()){
@@ -94,49 +96,12 @@
                     </select>
                 </td>
                 <td>
-                    <input type="text" name="quantity1" class="input" size="10" pattern="[0-9]+">
+                    <input type="text" name="quantity<%=i%>" class="input" size="10" pattern="[0-9]+">
                 </td>
             </tr>
-
-            <!Row 2>
-            <tr>
-                <td>
-                    <select name="instrument2" class="input">
-                        <option inst1="-1">Select Instrument</option>
-                        <%
-                            rs = stm.executeQuery(query);
-                            while (rs.next()){
-                        %>
-                        <option><%=rs.getString("name")%></option>
-                        <%
-                            }
-                        %>
-                    </select>
-                </td>
-                <td>
-                    <input type="text" name="quantity2" class="input" size="10" pattern="[0-9]+">
-                </td>
-            </tr>
-
-            <!Row 3>
-            <tr>
-                <td>
-                    <select name="instrument3" class="input">
-                        <option inst1="-1">Select Instrument</option>
-                        <%
-                            rs = stm.executeQuery(query);
-                            while (rs.next()){
-                        %>
-                        <option><%=rs.getString("name")%></option>
-                        <%
-                            }
-                        %>
-                    </select>
-                </td>
-                <td>
-                    <input type="text" name="quantity3" class="input" size="10" pattern="[0-9]+">
-                </td>
-            </tr>
+            <%
+                }
+            %>
 
         </table>
 

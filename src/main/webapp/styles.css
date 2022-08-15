@@ -95,6 +95,13 @@ table{
     text-align: left;
 }
 
+#table_validation{
+    font-family: Calibri;
+    font-weight: bold;
+    width: 400px;
+    text-align: left;
+}
+
 .table_summary_values{
     width: 500px;
 }
@@ -106,9 +113,16 @@ table{
     background-color: white;
 }
 
+.input.negative{
+   color: red;
+}
+
 .input_data{
     border: 2px solid rgb(56,87,35);
     background-color: rgb(242, 242, 242);
+}
+.input_data.negative{
+    color: red;
 }
 
 .input_data_instrument{

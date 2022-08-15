@@ -60,6 +60,9 @@
             - Anzahl: Es werden nur positive Ganzzahlen aktzeptiert.
         </p>
         <p>
+            - Strategie: Es muss mindestens eine Strategie selektiert werden.
+        </p>
+        <p>
             - Min-Risk-Portfolio: Eine Zielrendite wird nicht benötigt.
         </p>
         <p>
