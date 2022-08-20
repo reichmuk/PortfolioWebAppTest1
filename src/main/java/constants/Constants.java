@@ -1,6 +1,5 @@
 package constants;
 
-
 /**
  * This class contains all the constants used across the project.
  *
@@ -36,5 +35,4 @@ public class Constants {
     public static final String MINRISKPORTFOLIOVALUE = "minRiskPortfolioValue";
     public static final String MINRISKPORTFOLIORETURN = "minRiskPortfolioReturn";
     public static final String MINRISKPORTFOLIOVOLATILITY = "minRiskPortfolioVolatility";
-
 }

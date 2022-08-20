@@ -1,7 +1,5 @@
 package domain;
 import java.util.ArrayList;
-import java.util.HashSet;
-
 import constants.Constants;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -82,7 +80,7 @@ public class Calculations {
      * @param ticker The ticker of the instrument.
      */
     public void calcMetricSummary(String ticker){
-        ArrayList<Double> simpleReturns = sqlTable.getMetricList(Constants.SIMPLERETURN,ticker);
+        //ArrayList<Double> simpleReturns = sqlTable.getMetricList(Constants.SIMPLERETURN,ticker);
         ArrayList<Double> steadyReturns = sqlTable.getMetricList(Constants.STEADYRETURN,ticker);
         double avgSimpleReturns=0;
         double avgSteadyReturns=0;

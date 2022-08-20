@@ -151,7 +151,6 @@ public class MainServlet extends HttpServlet {
             //Timestamp cleanup
             sqlTable.timeStampCleanup();
 
-
             //Process al portfolio calculations
 
             //Calc and store singleReturns and summaryMetrics for each instrument
@@ -184,11 +183,5 @@ public class MainServlet extends HttpServlet {
         } else {
             response.sendRedirect("error.jsp?strategy="+strategyValidation+"&return="+targetReturnValidation+"&quantity="+quantityValidation+"&instrument="+instrumentValidation);
         }
-
-        System.out.println("Strategy-Validation: "+strategyValidation);
-        System.out.println("Target-Return-Validation: "+targetReturnValidation);
-        System.out.println("Quantity-Validation:" +quantityValidation);
-        System.out.println("Instrument-Validation: "+instrumentValidation);
-
     }
 }

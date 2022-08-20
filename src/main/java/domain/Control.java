@@ -17,7 +17,6 @@ public class Control {
     private static Constants constants;
 
 
-
     /**
      * CONSTRUCTOR
      */
@@ -27,7 +26,6 @@ public class Control {
         calculations = new Calculations();
         yahooApi = new YahooApi();
         constants = new Constants();
-
     }
 
     /**
