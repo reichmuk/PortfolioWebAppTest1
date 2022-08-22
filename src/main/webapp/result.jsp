@@ -64,11 +64,11 @@
                 <td><input type="text" id="portfolioValueCurrent" class="input_data" value=<%=currentPortfolioValue%> readonly></td>
             </tr>
             <tr>
-                <td><label for="portfolioReturnCurrent">Portfoliorendite in % (aktuell): </label></td>
+                <td><label for="portfolioReturnCurrent">Portfoliorendite (3 Monate) in % (aktuell): </label></td>
                 <td><input type="text" id="portfolioReturnCurrent" class="input_data <%=doubleCurrentPortfolioReturn<0 ? "negative" : "" %>" value=<%=currentPortfolioReturn%> readonly></td>
             </tr>
             <tr>
-                <td><label for="portfolioVolatilityCurrent">Portfoliovolatilität in % (aktuell): </label></td>
+                <td><label for="portfolioVolatilityCurrent">Portfoliovolatilität (3 Monate) in % (aktuell): </label></td>
                 <td><input type="text" id="portfolioVolatilityCurrent" class="input_data <%=doubleCurrentPortfolioVolatility<0 ? "negative" : "" %>" value=<%=currentPortfolioVolatility%> readonly></td>
             </tr>
 
