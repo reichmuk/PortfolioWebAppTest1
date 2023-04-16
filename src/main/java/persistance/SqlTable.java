@@ -246,7 +246,9 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+        System.out.println("test");
         return metricList;
+
     }
 
     /**
