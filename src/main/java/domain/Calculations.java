@@ -38,9 +38,8 @@ public class Calculations {
      * Method that calculates the simpleReturn and steadyReturn for each instrument for each day in the data-sample.
      * The results are stored in the MySQL-DB in the "metrics" table.
      */
-    public void calcSingleReturn(){
+    public void calcSingleReturn(ArrayList<String>tickerList){
         ArrayList<Integer> timeStampList = yahooApi.getTimeStampList();
-        ArrayList<String> tickerList = yahooApi.getTickerList();
         ArrayList<Double> simpleReturnList = new ArrayList<>();
         ArrayList<Double> steadyReturnList = new ArrayList<>();
 
@@ -72,7 +71,7 @@ public class Calculations {
     public void calcMetricSummary(String ticker, ArrayList<Double> steadyReturnList){
         double avgSimpleReturns=0;
         double avgSteadyReturns=0;
-        double standardDeviation = 0;
+        double standardDeviation=0;
 
         for(double value : steadyReturnList){
             avgSteadyReturns = avgSteadyReturns+value;
@@ -127,29 +126,11 @@ public class Calculations {
         for(int i = 0; i<quantityList.size(); i++){
             int quantity = quantityList.get(i);
             double latestPrice = latestPriceList.get(i);
-            System.out.println(latestPrice);
             portfolioValue = portfolioValue+(quantity*latestPrice);
         }
         return portfolioValue;
     }
 
-    /**
-     * Method that calculates the portfolioValue of the respective portfolio.
-     * The result is stored in the MySQL-DB "metrics_summary" table.
-     * @param portfolio The "current" portfolio.
-     */
-    public void calcPortfolioValueOld(String portfolio){
-        double portfolioValue = 0;
-        String metricName = portfolio+"PortfolioValue";
-        ArrayList<String> instruments = sqlTable.getPortfolioTickers(portfolio);
-
-        for(String ticker:instruments){
-            double quantity = sqlTable.getPortfolioQuantity(ticker,portfolio);
-            double price = sqlTable.getLatestPrice(ticker);
-            portfolioValue = portfolioValue + (quantity*price);
-        }
-        sqlTable.insertMetricSummary(Constants.PORTFOLIO,metricName,portfolioValue);
-    }
 
     /**
      * Method that calculates the portfolio-return.

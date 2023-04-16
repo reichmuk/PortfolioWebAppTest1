@@ -140,7 +140,6 @@ public class MainServlet extends HttpServlet {
 
             //Get lastPriceList
             latestPriceList=sqlTable.getLatestPriceList(tickerList);
-            System.out.println("getLatestPriceList successful");
 
             //Calc portfolioValue
             double portfolioValue = calculations.calcPortfolioValue(quantityList,latestPriceList);
@@ -148,7 +147,6 @@ public class MainServlet extends HttpServlet {
 
             //Add all instruments to portfolio with quantity and weight
             for(int i = 0; i<tickerList.size(); i++){
-                String ticker = tickerList.get(i);
                 int quantity = quantityList.get(i);
                 double latestPrice = latestPriceList.get(i);
                 double weight = (quantity*latestPrice)/portfolioValue;
@@ -157,7 +155,7 @@ public class MainServlet extends HttpServlet {
             sqlTable.insertPortfolio(tickerList, Constants.CURRENT,quantityList,weightList);
 
             //Calc and store singleReturns and summaryMetrics for each instrument
-            calculations.calcSingleReturn();
+            calculations.calcSingleReturn(tickerList);
 
 
             /**

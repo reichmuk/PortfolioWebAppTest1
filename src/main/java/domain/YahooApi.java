@@ -18,7 +18,6 @@ public class YahooApi {
 
     //Declare variables
     private SqlTable sqlTable;
-
     private static ArrayList<Integer> timeStampList;
     private static ArrayList<String> tickerList;
 

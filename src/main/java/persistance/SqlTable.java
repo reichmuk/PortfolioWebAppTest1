@@ -11,7 +11,6 @@ import java.util.ArrayList;
  */
 public class SqlTable {
 
-    double portfolioValue;
 
     /**
      * CONSTRUCTOR
