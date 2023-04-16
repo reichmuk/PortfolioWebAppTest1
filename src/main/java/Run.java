@@ -22,7 +22,6 @@ public class Run {
             Calculations calculations = Control.getCalculations();
 
             //sqlTable.removePrice(1659078000,"SREN.SW");
-            sqlTable.timeStampCleanup();
 
 
 

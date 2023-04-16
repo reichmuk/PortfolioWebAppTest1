@@ -19,12 +19,14 @@ public class Calculations {
     //Declare variables
     private SqlTable sqlTable;
     private static String strategy;
+    private YahooApi yahooApi;
 
     /**
      * CONSTRUCTOR
      */
     public Calculations(){
         sqlTable = Control.getSqlTable();
+        yahooApi = Control.getYahooApi();
         strategy = "";
     }
 
@@ -35,23 +37,63 @@ public class Calculations {
     /**
      * Method that calculates the simpleReturn and steadyReturn for each instrument for each day in the data-sample.
      * The results are stored in the MySQL-DB in the "metrics" table.
-     * @param ticker The ticker of the instrument.
      */
-    public void calcSingleReturn(String ticker){
-        ArrayList<Double> prices = sqlTable.getPriceList(Constants.PRICE,ticker);
-        ArrayList<Double> timeStamps = sqlTable.getPriceList(Constants.TIMESTAMP,ticker);
+    public void calcSingleReturn(){
+        ArrayList<Integer> timeStampList = yahooApi.getTimeStampList();
+        ArrayList<String> tickerList = yahooApi.getTickerList();
+        ArrayList<Double> simpleReturnList = new ArrayList<>();
+        ArrayList<Double> steadyReturnList = new ArrayList<>();
 
-        for(int i = 0; i< prices.size(); i++){
-            if(i==0){} else{
-                double simpleReturn = (prices.get(i) - prices.get(i-1)) / prices.get(i-1);
-                double steadyReturn = Math.log(1+simpleReturn);
-                double timeStamp = timeStamps.get(i);
-                int timeStampInt = (int) timeStamp;
-                sqlTable.insertMetric(ticker,timeStampInt,Constants.SIMPLERETURN,simpleReturn);
-                sqlTable.insertMetric(ticker,timeStampInt,Constants.STEADYRETURN,steadyReturn);
+        for(int i = 0; i<tickerList.size(); i++){
+            String ticker = tickerList.get(i);
+            ArrayList<Double> priceList = sqlTable.getPriceList(Constants.PRICE,ticker);
+
+            for(int j = 0; j< priceList.size(); j++){
+                if(j==0){} else{
+                    double simpleReturn = (priceList.get(j) - priceList.get(j-1)) / priceList.get(j-1);
+                    simpleReturnList.add(simpleReturn);
+                    double steadyReturn = Math.log(1+simpleReturn);
+                    steadyReturnList.add(steadyReturn);
+                }
             }
+            sqlTable.addMetricList(ticker,timeStampList,Constants.SIMPLERETURN,simpleReturnList);
+            simpleReturnList.clear();
+            sqlTable.addMetricList(ticker,timeStampList,Constants.STEADYRETURN,steadyReturnList);
+            calcMetricSummary(ticker, steadyReturnList);
+            steadyReturnList.clear();
         }
     }
+
+    /**
+     * Method that calculates the summary-metrics (avgSteadyReturn, avgSimpleReturn, standardDeviation) for each instrument.
+     * The results are stored in the MySQL-DB in the "metrics_summary" table.
+     * @param ticker The ticker of the instrument.
+     */
+    public void calcMetricSummary(String ticker, ArrayList<Double> steadyReturnList){
+        double avgSimpleReturns=0;
+        double avgSteadyReturns=0;
+        double standardDeviation = 0;
+
+        for(double value : steadyReturnList){
+            avgSteadyReturns = avgSteadyReturns+value;
+        }
+
+        avgSteadyReturns = avgSteadyReturns/steadyReturnList.size();
+        avgSimpleReturns = (Math.exp(avgSteadyReturns))-1;
+        sqlTable.insertMetricSummary(ticker,Constants.AVGSTEADYRETURN,avgSteadyReturns);
+        sqlTable.insertMetricSummary(ticker,Constants.AVGSIMPLERETURN,avgSimpleReturns);
+
+        DescriptiveStatistics stats = new DescriptiveStatistics();
+
+        for(double steadyReturn : steadyReturnList){
+            double value = steadyReturn;
+            stats.addValue(value);
+        }
+
+        standardDeviation = stats.getStandardDeviation();
+        sqlTable.insertMetricSummary(ticker,Constants.STANDARDDEVIATION,standardDeviation);
+    }
+
 
     /**
      * Method that calculates the correlations between each instrument.
@@ -74,49 +116,29 @@ public class Calculations {
         }
     }
 
-    /**
-     * Method that calculates the summary-metrics (avgSteadyReturn, avgSimpleReturn, standardDeviation) for each instrument.
-     * The results are stored in the MySQL-DB in the "metrics_summary" table.
-     * @param ticker The ticker of the instrument.
-     */
-    public void calcMetricSummary(String ticker){
-        //ArrayList<Double> simpleReturns = sqlTable.getMetricList(Constants.SIMPLERETURN,ticker);
-        ArrayList<Double> steadyReturns = sqlTable.getMetricList(Constants.STEADYRETURN,ticker);
-        double avgSimpleReturns=0;
-        double avgSteadyReturns=0;
-        double standardDeviation = 0;
 
-        for(double value : steadyReturns){
-            avgSteadyReturns = avgSteadyReturns+value;
-        }
-
-        avgSteadyReturns = avgSteadyReturns/steadyReturns.size();
-        avgSimpleReturns = (Math.exp(avgSteadyReturns))-1;
-        sqlTable.insertMetricSummary(ticker,Constants.AVGSTEADYRETURN,avgSteadyReturns);
-        sqlTable.insertMetricSummary(ticker,Constants.AVGSIMPLERETURN,avgSimpleReturns);
-
-        DescriptiveStatistics stats = new DescriptiveStatistics();
-
-        for(double steadyReturn : steadyReturns){
-            double value = steadyReturn;
-            stats.addValue(value);
-        }
-
-        standardDeviation = stats.getStandardDeviation();
-        sqlTable.insertMetricSummary(ticker,Constants.STANDARDDEVIATION,standardDeviation);
-    }
 
     //------------------------------------------------------------------------------------------------------------------
     // Calculations portfolio level
     //------------------------------------------------------------------------------------------------------------------
 
+    public double calcPortfolioValue(ArrayList<Integer> quantityList, ArrayList<Double> latestPriceList){
+        double portfolioValue = 0;
+        for(int i = 0; i<quantityList.size(); i++){
+            int quantity = quantityList.get(i);
+            double latestPrice = latestPriceList.get(i);
+            System.out.println(latestPrice);
+            portfolioValue = portfolioValue+(quantity*latestPrice);
+        }
+        return portfolioValue;
+    }
 
     /**
      * Method that calculates the portfolioValue of the respective portfolio.
      * The result is stored in the MySQL-DB "metrics_summary" table.
      * @param portfolio The "current" portfolio.
      */
-    public void calcPortfolioValue(String portfolio){
+    public void calcPortfolioValueOld(String portfolio){
         double portfolioValue = 0;
         String metricName = portfolio+"PortfolioValue";
         ArrayList<String> instruments = sqlTable.getPortfolioTickers(portfolio);
@@ -252,6 +274,8 @@ public class Calculations {
         RealMatrix actual = inverseMatrixLagrange.multiply(matrixConditions);
 
         //Store new weights in DB
+        /**
+         *
         counter1=0;
         for(String ticker : tickerList){
             double newWeitght = actual.getEntry(counter1,0);
@@ -260,6 +284,7 @@ public class Calculations {
             sqlTable.insertPortfolio(ticker,portfolio,newQuantity,newWeitght);
             counter1++;
         }
+         */
     }
 
     /**
@@ -328,6 +353,7 @@ public class Calculations {
         RealMatrix actual = inverseMatrixLagrange.multiply(matrixConditions);
 
         //Store new weights in DB
+        /**
         counter1=0;
         for(String ticker : tickerList){
             double newWeitght = actual.getEntry(counter1,0);
@@ -336,6 +362,7 @@ public class Calculations {
             sqlTable.insertPortfolio(ticker,portfolio,newQuantity,newWeitght);
             counter1++;
         }
+         */
     }
 
     //------------------------------------------------------------------------------------------------------------------

@@ -11,6 +11,8 @@ import java.util.ArrayList;
  */
 public class SqlTable {
 
+    double portfolioValue;
+
     /**
      * CONSTRUCTOR
      */
@@ -22,13 +24,16 @@ public class SqlTable {
     //------------------------------------------------------------------------------------------------------------------
 
     /**
+     * APPROVED
      * Method that performs the connection to the MySQL-DB "instrumentDB".
      */
     public Connection getConnection(){
         Connection connection = null;
         String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
+        //String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
         String user = "root";
         String password = "Blue_22!";
+        //String password = "BlueBlueBlue22";
         try {
             connection = DriverManager.getConnection(url, user, password);
         } catch (SQLException e){
@@ -38,54 +43,120 @@ public class SqlTable {
     }
 
     /**
+     * APPROVED
      * Method that performs a cleanup if timeStamps in the different instruments are not consistent.
      */
-    public void timeStampCleanup(){
-        ArrayList<String> tickerList = getPortfolioTickers(Constants.CURRENT);
-        String startTicker = tickerList.get(0);
-        ArrayList<Double> startTickerTimestampList = getPriceList(Constants.TIMESTAMP,startTicker);
 
-        //Generate list that consists only values which also exist in all other lists
-        for(String ticker : tickerList){
-            ArrayList<Double> tickerTimestampList = getPriceList(Constants.TIMESTAMP,ticker);
-            startTickerTimestampList.retainAll(tickerTimestampList);
-        }
+     public void timeStampCleanup(ArrayList<String> tickerList, ArrayList<Integer> cleanTimestampList){
+         Connection connection = getConnection();
 
-        //Remove all values from DB which don't exist in main-list
-        for(String ticker : tickerList){
-            ArrayList<Double> tickerTimestampList = getPriceList(Constants.TIMESTAMP,ticker);
-            tickerTimestampList.removeAll(startTickerTimestampList);
-            for(double timeStamp : tickerTimestampList){
-                removePrice((int)timeStamp,ticker);
+         //Get timeStampList for respective ticker from DB
+         for(String ticker : tickerList){
+            String tickerString = "\""+ticker+"\"";
+            ArrayList<Integer> timeStampList = new ArrayList<Integer>();
+            String sqlCommand = "SELECT time_stamp from prices where ticker="+tickerString+" order by time_stamp ASC;";
+
+            try {
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sqlCommand);
+                while(resultSet.next()){
+                    int timeStamp = Integer.parseInt(resultSet.getString(Constants.TIMESTAMP));
+                    timeStampList.add(timeStamp);
+                }
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+
+            //Remove all values from DB which don't exist in cleanTimestampList
+            timeStampList.removeAll(cleanTimestampList);
+
+            for(int timeStamp : timeStampList){
+                String sqlCommand2 = "DELETE from prices where time_stamp="+timeStamp+" and ticker="+tickerString+";";
+                System.out.println(sqlCommand2);
+
+                try {
+                    Statement statement = connection.createStatement();
+                    statement.execute(sqlCommand2);
+                }catch (SQLException e){
+                    e.printStackTrace();
+                }
             }
         }
-    }
+         try{connection.close();
+         } catch (SQLException e){e.printStackTrace();}
+
+         System.out.println("TimeStampCleanup COMPLETED!");
+     }
+
 
     //------------------------------------------------------------------------------------------------------------------
     // QUERY - Methods
     //------------------------------------------------------------------------------------------------------------------
 
     /**
-     * Method that returns the ticker of a given instrument.
-     * @param instrument The name of the instrument
-     * @return returns instrument ticker
+     * Method that returns the tickerList for a given instrumentLi9st of a given instrument.
+     * @param instrumentList the list with all instruments
+     * @return returns the tickerList
      */
-    public String getInstrumentTicker(String instrument){
-        String instrumentName = "\""+instrument+"\"";
-        String ticker = "";
+    public ArrayList<String> getTickerList(ArrayList<String> instrumentList){
+        ArrayList<String> tickerList = new ArrayList<>();
         Connection connection = getConnection();
-        String sqlCommand = "SELECT ticker from instruments where name="+instrumentName+";";
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlCommand);
-            while(resultSet.next()){
-                String value = resultSet.getString(Constants.TICKER);
-                ticker = value;
+
+        for(int i = 0; i<instrumentList.size(); i++){
+            String ticker = "";
+            String instrument = instrumentList.get(i);
+            String instrumentName = "\""+instrument+"\"";
+            String sqlCommand = "SELECT ticker from instruments where name="+instrumentName+";";
+            try {
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sqlCommand);
+                while(resultSet.next()){
+                    ticker = resultSet.getString(Constants.TICKER);
+                }
+            }catch (SQLException e){
+                e.printStackTrace();
             }
+            tickerList.add(ticker);
+        }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
+        return tickerList;
+    }
+
+    public ArrayList<Double> getLatestPriceList(ArrayList<String> tickerList){
+        Connection connection = getConnection();
+        Integer lastTimeStamp = 0;
+        ArrayList<Double> latestPriceList = new ArrayList<>();
+        String ticker1 = tickerList.get(0);
+        ticker1 = "\""+ticker1+"\"";
+        String sqlCommand1 = "SELECT time_stamp from prices where ticker="+ticker1+";";
+
+        try{
+            Statement statement = connection.createStatement();
+            ResultSet resultSet1 = statement.executeQuery(sqlCommand1);
+            while (resultSet1.next()){
+                lastTimeStamp = Integer.parseInt(resultSet1.getString(Constants.TIMESTAMP));
+            }
+
+            for(String ticker : tickerList){
+                ticker = "\""+ticker+"\"";
+                String sqlCommand2 = "SELECT price from prices where ticker="+ticker+" and time_stamp="+lastTimeStamp+";";
+                ResultSet resultSet2 = statement.executeQuery(sqlCommand2);
+                while (resultSet2.next()){
+                    latestPriceList.add(Double.parseDouble(resultSet2.getString(Constants.PRICE)));
+                }
+            }
+
         }catch (SQLException e){
             e.printStackTrace();
         }
-        return ticker;
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
+        return latestPriceList;
     }
 
     /**
@@ -303,42 +374,47 @@ public class SqlTable {
     // MANIPULATION - Methods
     //------------------------------------------------------------------------------------------------------------------
 
-    /**
-     * Method to store a price in the MySQL-DB.
-     * @param ticker The ticker of the instrument.
-     * @param timeStamp The timestamp (date) of the price
-     * @param price the price of the instrument
-     */
-    public void insertPrice(String ticker, int timeStamp, double price){
-        String tickerString = "\""+ticker+"\"";
+
+    public void priceUpload(String ticker, ArrayList<Integer> timeStampList, ArrayList<Double> priceList) {
         Connection connection = getConnection();
-        String sqlCommand = "INSERT INTO prices VALUES("+tickerString+","+timeStamp+","+price+");";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
+        String tickerString = "\"" + ticker + "\"";
+        for (int j = 0; j < timeStampList.size(); j++) {
+            int timeStamp = timeStampList.get(j);
+            double price = priceList.get(j);
+            String sqlCommand = "INSERT INTO prices VALUES(" + tickerString + "," + timeStamp + "," + price + ");";
+            try {
+                Statement statement = connection.createStatement();
+                statement.execute(sqlCommand);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
+        try{connection.close();
+            } catch (SQLException e){e.printStackTrace();}
+
     }
 
-    /**
-     * Method to remove a price from the DB.
-     * @param ticker The ticker of the instrument
-     * @param timeStamp The timestamp (date) of the price
-     */
-    public void removePrice(int timeStamp, String ticker){
-        String tickerString = "\""+ticker+"\"";
+    public void addMetricList(String ticker,ArrayList<Integer> timeStampList,String metric,ArrayList<Double> metricList){
         Connection connection = getConnection();
-        String sqlCommand = "DELETE from prices where time_stamp="+timeStamp+" and ticker="+tickerString+";";
-        System.out.println(sqlCommand);
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
 
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
+        for(int i=0; i<metricList.size();i++){
+            int timeStamp = timeStampList.get(i+1);
+            double value = metricList.get(i);
+            String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+timeStamp+","+metricString+","+value+");";
+            try {
+                Statement statement = connection.createStatement();
+                statement.execute(sqlCommand);
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
     }
+
 
     /**
      * Method to store a metric (simpleReturn or steadyReturn) in the MySQL-DB table "metrics".
@@ -382,21 +458,29 @@ public class SqlTable {
 
     /**
      * Method to add an instrument to the portfolio.
-     * @param ticker The ticker of the instrument
+     * @param tickerList The ticker of the instrument
      * @param portfolio The portfolio (current, minRisk, targetReturn)
-     * @param weight The respective weight of the instrument in the portfolio
+     * @param weightList The respective weight of the instrument in the portfolio
      */
-    public void insertPortfolio(String ticker, String portfolio, int quantity, double weight){
-        String tickerString = "\""+ticker+"\"";
-        String portfolioString = "\""+portfolio+"\"";
+    public void insertPortfolio(ArrayList<String> tickerList, String portfolio, ArrayList<Integer> quantityList, ArrayList<Double> weightList){
         Connection connection = getConnection();
-        String sqlCommand = "INSERT INTO portfolio VALUES("+tickerString+","+portfolioString+","+quantity+","+weight+");";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
+
+        for(int i = 0; i<tickerList.size(); i++){
+            String ticker = tickerList.get(i);
+            String tickerString = "\""+ticker+"\"";
+            String portfolioString = "\""+portfolio+"\"";
+            int quantity = quantityList.get(i);
+            double weight = weightList.get(i);
+            String sqlCommand = "INSERT INTO portfolio VALUES("+tickerString+","+portfolioString+","+quantity+","+weight+");";
+            try {
+                Statement statement = connection.createStatement();
+                statement.execute(sqlCommand);
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
         }
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
     }
 
     /**

@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 
 /**
  * The class YahooAPI performs the price-data-import from Yahoo Finance API (https://www.yahoofinanceapi.com/) and
@@ -18,47 +19,83 @@ public class YahooApi {
     //Declare variables
     private SqlTable sqlTable;
 
+    private static ArrayList<Integer> timeStampList;
+    private static ArrayList<String> tickerList;
+
     /**
      * CONSTRUCTOR
      */
     public YahooApi(){
         sqlTable = Control.getSqlTable();
+        timeStampList = new ArrayList<>();
+        tickerList = new ArrayList<>();
     }
 
     /**
-     * Method that imports the historical prices from the respective instrument.
-     * The historical prices are stored in the MySQL-DB.
-     * @param ticker The ticker of the instrument.
+     * APPROVED
+     * Method that imports the prices and timestamps from the Yahoo API.
+     * @param tickerList the list with all tickers
+     * @return returns the lastPriceList, which contains the latest prie of each ticker
      */
-    public void priceImport(String ticker){
-        String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=3mo&symbols="+ticker;
 
-        //Connect to Yahoo API
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(yahooUri))
-                .header("x-api-key", "UoiBfllMKe3O9En2EeYPF37w1EYYvXWH8ZeXruPW")
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-        try{
-            //Create JSON Object
-            HttpResponse<String> response = HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-            JSONObject jsonObject = new JSONObject(response.body());
+    public void priceImport(ArrayList<String> tickerList){
+        this.tickerList = tickerList;
 
-            //Get the data from the JSON Object
-            JSONArray jsonArrayDate = (JSONArray) jsonObject.getJSONObject(ticker).get("timestamp");
-            JSONArray jsonArrayPrice = (JSONArray) jsonObject.getJSONObject(ticker).get("close");
+        for(int i = 0; i<tickerList.size(); i++){
+            //Variables
+            double lastPrice=0;
+            ArrayList<Integer> timeStampListImport = new ArrayList<>();
+            ArrayList<Double> priceList = new ArrayList<>();
+            String ticker = tickerList.get(i);
+            String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=3mo&symbols="+ticker;
 
-            //Upload data to MySQL-DB
-            for(int i = 0; i<jsonArrayDate.length();i++){
-                String stringTimeStamp = jsonArrayDate.get(i).toString();
-                int timestamp = Integer.parseInt(stringTimeStamp);
-                String stringPrice = jsonArrayPrice.get(i).toString();
-                double price = Double.parseDouble(stringPrice);
-                sqlTable.insertPrice(ticker,timestamp,price);
-            }
-        }catch (Exception e){
+            //Connect to Yahoo API
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(yahooUri))
+                    .header("x-api-key", "Ace0V6SW9923onItntb88654V2oeOx3U6AkC5XBB")
+                    .method("GET", HttpRequest.BodyPublishers.noBody())
+                    .build();
+            try {
+                //Create JSON Object
+                HttpResponse<String> response = HttpClient.newHttpClient()
+                        .send(request, HttpResponse.BodyHandlers.ofString());
+                JSONObject jsonObject = new JSONObject(response.body());
+
+                //Get the data from the JSON Object
+                JSONArray jsonArrayDate = (JSONArray) jsonObject.getJSONObject(ticker).get("timestamp");
+                JSONArray jsonArrayPrice = (JSONArray) jsonObject.getJSONObject(ticker).get("close");
+
+                //Move data from JSON to ArrayList
+                for(int j = 0; j<jsonArrayDate.length();j++){
+                    String stringTimeStamp = jsonArrayDate.get(j).toString();
+                    int timestamp = Integer.parseInt(stringTimeStamp);
+                    timeStampListImport.add(timestamp);
+                    String stringPrice = jsonArrayPrice.get(j).toString();
+                    double price = Double.parseDouble(stringPrice);
+                    priceList.add(price);
+                }
+
+                //Build first Timestamp List for Cleanup
+                if(i==0){
+                    timeStampList=timeStampListImport;
+                }
+                timeStampList.retainAll(timeStampListImport);
+
+                //Price upload
+                sqlTable.priceUpload(ticker,timeStampListImport,priceList);
+
+            } catch (Exception e){
             e.printStackTrace();
+            }
         }
+        sqlTable.timeStampCleanup(tickerList,timeStampList);
+    }
+
+    public ArrayList<Integer> getTimeStampList() {
+        return timeStampList;
+    }
+
+    public ArrayList<String> getTickerList() {
+        return tickerList;
     }
 }

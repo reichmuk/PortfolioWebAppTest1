@@ -23,8 +23,8 @@ public class Control {
     public Control(){
         // Initialize variables
         sqlTable = new SqlTable();
-        calculations = new Calculations();
         yahooApi = new YahooApi();
+        calculations = new Calculations();
         constants = new Constants();
     }
 

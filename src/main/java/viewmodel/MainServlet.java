@@ -53,14 +53,17 @@ public class MainServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-
+        //Variables
         SqlTable sqlTable = Control.getSqlTable();
         Calculations calculations = Control.getCalculations();
         YahooApi yahooApi = Control.getYahooApi();
 
         ArrayList<String> instrumentList = new ArrayList<String>();
+        ArrayList<String> tickerList = new ArrayList<>();
         ArrayList<Integer> quantityList = new ArrayList<Integer>();
-        double portfolioValue = 0;
+        ArrayList<Double> latestPriceList = new ArrayList<>();
+        ArrayList<Double> weightList = new ArrayList<>();
+
         double targetReturnCondition=0;
 
         //Get optimal portfolio parameter
@@ -130,36 +133,42 @@ public class MainServlet extends HttpServlet {
         //Validation
         if(strategyValidation&&targetReturnValidation&&quantityValidation&&instrumentValidation){
 
-            //Import and store prices of all selected instruments
-            for(int i = 0; i<instrumentList.size(); i++){
-                String instrument = instrumentList.get(i);
-                String ticker = sqlTable.getInstrumentTicker(instrument);
-                yahooApi.priceImport(ticker);
-                int quantity = quantityList.get(i);
-                portfolioValue = portfolioValue+(quantity*sqlTable.getLatestPrice(ticker));
-            }
+            tickerList = sqlTable.getTickerList(instrumentList);
+
+            //Import and store prices of all selected instruments and get lastPriceList
+            yahooApi.priceImport(tickerList);
+
+            //Get lastPriceList
+            latestPriceList=sqlTable.getLatestPriceList(tickerList);
+            System.out.println("getLatestPriceList successful");
+
+            //Calc portfolioValue
+            double portfolioValue = calculations.calcPortfolioValue(quantityList,latestPriceList);
+            sqlTable.insertMetricSummary(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIOVALUE,portfolioValue);
 
             //Add all instruments to portfolio with quantity and weight
-            for(int i = 0; i<instrumentList.size(); i++){
-                String instrument = instrumentList.get(i);
-                String ticker = sqlTable.getInstrumentTicker(instrument);
+            for(int i = 0; i<tickerList.size(); i++){
+                String ticker = tickerList.get(i);
                 int quantity = quantityList.get(i);
-                double weight = (quantity*sqlTable.getLatestPrice(ticker))/portfolioValue;
-                sqlTable.insertPortfolio(ticker,Constants.CURRENT,quantity,weight);
+                double latestPrice = latestPriceList.get(i);
+                double weight = (quantity*latestPrice)/portfolioValue;
+                weightList.add(weight);
             }
+            sqlTable.insertPortfolio(tickerList, Constants.CURRENT,quantityList,weightList);
 
-            //Timestamp cleanup
-            sqlTable.timeStampCleanup();
+            //Calc and store singleReturns and summaryMetrics for each instrument
+            calculations.calcSingleReturn();
+
+
+            /**
+
+
+
+
 
             //Process al portfolio calculations
 
-            //Calc and store singleReturns and summaryMetrics for each instrument
-            for(int i = 0; i<instrumentList.size(); i++){
-                String instrument = instrumentList.get(i);
-                String ticker = sqlTable.getInstrumentTicker(instrument);
-                calculations.calcSingleReturn(ticker);
-                calculations.calcMetricSummary(ticker);
-            }
+
 
             calculations.calcPortfolioValue(Constants.CURRENT);
             calculations.calcPortfolioReturn(Constants.CURRENT);
@@ -177,6 +186,7 @@ public class MainServlet extends HttpServlet {
             calculations.calcPortfolioValue(strategy);
             calculations.calcPortfolioReturn(strategy);
             calculations.calcPortfolioVolatility(strategy);
+             */
 
             //Direct to result page
             response.sendRedirect("result.jsp");
