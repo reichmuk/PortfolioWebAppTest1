@@ -28,11 +28,11 @@ public class SqlTable {
      */
     public Connection getConnection(){
         Connection connection = null;
-        //String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
-        String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
+        String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
+        //String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
         String user = "root";
-        //String password = "Blue_22!";
-        String password = "BlueBlueBlue22";
+        String password = "Blue_22!";
+        //String password = "BlueBlueBlue22";
         try {
             connection = DriverManager.getConnection(url, user, password);
         } catch (SQLException e){
@@ -178,6 +178,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         return result;
     }
 
@@ -218,6 +222,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         if(column==Constants.PRICE){
             return priceList;
         }else {return timeStampList;}
@@ -250,7 +258,6 @@ public class SqlTable {
         } catch (SQLException e){e.printStackTrace();}
 
         return metricList;
-
     }
 
     /**
@@ -275,6 +282,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         return metricSummaryValue;
     }
 
@@ -298,6 +309,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         return tickerList;
     }
 
@@ -323,6 +338,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         return portfolioQuantity;
     }
 
@@ -348,6 +367,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         return portfolioWeight;
     }
 
@@ -395,6 +418,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         return portfolioValue;
     }
 
@@ -419,7 +446,6 @@ public class SqlTable {
         }
         try{connection.close();
             } catch (SQLException e){e.printStackTrace();}
-
     }
 
     public void addMetricList(String ticker,ArrayList<Integer> timeStampList,String metric,ArrayList<Double> metricList){
@@ -438,30 +464,8 @@ public class SqlTable {
                 e.printStackTrace();
             }
         }
-
         try{connection.close();
         } catch (SQLException e){e.printStackTrace();}
-    }
-
-
-    /**
-     * Method to store a metric (simpleReturn or steadyReturn) in the MySQL-DB table "metrics".
-     * @param ticker The ticker of the instrument.
-     * @param timeStamp The timeStamp of the respective metric
-     * @param metric The respective metric (simpleReturn or steadyReturn)
-     * @param value The metric-value of the respective ticker on the given timeStamp (date)
-     */
-    public void insertMetric(String ticker, int timeStamp, String metric, double value){
-        String tickerString = "\""+ticker+"\"";
-        String metricString = "\""+metric+"\"";
-        Connection connection = getConnection();
-        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+timeStamp+","+metricString+","+value+");";
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlCommand);
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -482,6 +486,9 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
     }
 
     /**
@@ -524,5 +531,38 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // RESERVE - Methods
+    //------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Method to store a metric (simpleReturn or steadyReturn) in the MySQL-DB table "metrics".
+     * @param ticker The ticker of the instrument.
+     * @param timeStamp The timeStamp of the respective metric
+     * @param metric The respective metric (simpleReturn or steadyReturn)
+     * @param value The metric-value of the respective ticker on the given timeStamp (date)
+     */
+    public void insertMetric(String ticker, int timeStamp, String metric, double value){
+        String tickerString = "\""+ticker+"\"";
+        String metricString = "\""+metric+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "INSERT INTO metrics VALUES("+tickerString+","+timeStamp+","+metricString+","+value+");";
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlCommand);
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
     }
 }
+
+

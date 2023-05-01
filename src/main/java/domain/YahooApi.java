@@ -19,7 +19,6 @@ public class YahooApi {
     //Declare variables
     private SqlTable sqlTable;
     private static ArrayList<Integer> timeStampList;
-    private static ArrayList<String> tickerList;
 
     /**
      * CONSTRUCTOR
@@ -27,7 +26,6 @@ public class YahooApi {
     public YahooApi(){
         sqlTable = Control.getSqlTable();
         timeStampList = new ArrayList<>();
-        tickerList = new ArrayList<>();
     }
 
     /**
@@ -38,7 +36,6 @@ public class YahooApi {
      */
 
     public void priceImport(ArrayList<String> tickerList){
-        this.tickerList = tickerList;
 
         for(int i = 0; i<tickerList.size(); i++){
             //Variables
@@ -94,7 +91,4 @@ public class YahooApi {
         return timeStampList;
     }
 
-    public ArrayList<String> getTickerList() {
-        return tickerList;
-    }
 }

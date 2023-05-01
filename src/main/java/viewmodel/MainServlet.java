@@ -185,7 +185,9 @@ public class MainServlet extends HttpServlet {
             }
 
             calculations.calcPortfolioReturn(tickerList, strategy);
+            System.out.println("Calc optimalPortfolioReturn COMPLETED!");
             calculations.calcPortfolioVolatility(tickerList, strategy);
+            System.out.println("Calc optimalPortfolioVolatility COMPLETED");
 
             //Direct to result page
             response.sendRedirect("result.jsp");

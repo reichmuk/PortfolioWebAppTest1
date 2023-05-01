@@ -113,7 +113,6 @@ public class Calculations {
         }
     }
 
-
     //------------------------------------------------------------------------------------------------------------------
     // Calculations portfolio level
     //------------------------------------------------------------------------------------------------------------------
@@ -127,7 +126,6 @@ public class Calculations {
         }
         return portfolioValue;
     }
-
 
     /**
      * Method that calculates the portfolio-return.
