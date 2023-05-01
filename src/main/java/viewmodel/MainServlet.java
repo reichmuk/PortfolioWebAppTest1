@@ -48,7 +48,7 @@ public class MainServlet extends HttpServlet {
             sqlTable.resetTable("metrics");
             sqlTable.resetTable("metrics_summary");
             sqlTable.resetTable("portfolio");
-            System.out.println("RESET hat funktioniert");
+            System.out.println("DB reset COMPLETED!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -61,6 +61,7 @@ public class MainServlet extends HttpServlet {
         ArrayList<String> instrumentList = new ArrayList<String>();
         ArrayList<String> tickerList = new ArrayList<>();
         ArrayList<Integer> quantityList = new ArrayList<Integer>();
+        ArrayList<Integer> optimalQuantityList = new ArrayList<>();
         ArrayList<Double> latestPriceList = new ArrayList<>();
         ArrayList<Double> weightList = new ArrayList<>();
 
@@ -129,7 +130,6 @@ public class MainServlet extends HttpServlet {
         }
 
 
-
         //Validation
         if(strategyValidation&&targetReturnValidation&&quantityValidation&&instrumentValidation){
 
@@ -137,6 +137,7 @@ public class MainServlet extends HttpServlet {
 
             //Import and store prices of all selected instruments and get lastPriceList
             yahooApi.priceImport(tickerList);
+            System.out.println("Price Import COMPLETED!");
 
             //Get lastPriceList
             latestPriceList=sqlTable.getLatestPriceList(tickerList);
@@ -144,6 +145,7 @@ public class MainServlet extends HttpServlet {
             //Calc portfolioValue
             double portfolioValue = calculations.calcPortfolioValue(quantityList,latestPriceList);
             sqlTable.insertMetricSummary(Constants.PORTFOLIO,Constants.CURRENTPORTFOLIOVALUE,portfolioValue);
+            System.out.println("Calc Portfolio Value COMPLETED!");
 
             //Add all instruments to portfolio with quantity and weight
             for(int i = 0; i<tickerList.size(); i++){
@@ -156,35 +158,34 @@ public class MainServlet extends HttpServlet {
 
             //Calc and store singleReturns and summaryMetrics for each instrument
             calculations.calcSingleReturn(tickerList);
+            System.out.println("Calc Single Returns COMPLETED!");
 
 
-            /**
-
-
-
-
-
-            //Process al portfolio calculations
-
-
-
-            calculations.calcPortfolioValue(Constants.CURRENT);
-            calculations.calcPortfolioReturn(Constants.CURRENT);
-            calculations.calcCorrelations(Constants.CURRENT);
-            calculations.calcPortfolioVolatility(Constants.CURRENT);
+            //Process all portfolio calculations
+            calculations.calcPortfolioReturn(tickerList, Constants.CURRENT);
+            System.out.println("Calc Portfolio Return COMPLETED!");
+            calculations.calcCorrelations(tickerList);
+            System.out.println("Calc Correlations COMPLETED!");
+            calculations.calcPortfolioVolatility(tickerList, Constants.CURRENT);
 
             if(strategy.equals(Constants.MINRISK)){
-                calculations.calcMinRiskPortfolio(strategy);
+                optimalQuantityList = calculations.calcMinRiskPortfolio(tickerList, strategy);
+                System.out.println("Calc MinRisk-Portfolio COMPLETED!");
+                double optimalPortfolioValue = calculations.calcPortfolioValue(optimalQuantityList,latestPriceList);
+                sqlTable.insertMetricSummary(Constants.PORTFOLIO,Constants.MINRISKPORTFOLIOVALUE,optimalPortfolioValue);
+                System.out.println("Calc optimalPortfolioValue COMPLETED!");
             }
 
             if(strategy.equals(Constants.TARGETRETURN)){
-                calculations.calcOptimalPortfolio(strategy,targetReturnCondition);
+                optimalQuantityList = calculations.calcOptimalPortfolio(tickerList, strategy,targetReturnCondition);
+                System.out.println("Calc TargetReturn-Portfolio COMPLETED!");
+                double optimalPortfolioValue = calculations.calcPortfolioValue(optimalQuantityList,latestPriceList);
+                sqlTable.insertMetricSummary(Constants.PORTFOLIO,Constants.TARGETRETURNPORTFOLIOVALUE,optimalPortfolioValue);
+                System.out.println("Calc optimalPortfolioValue COMPLETED!");
             }
 
-            calculations.calcPortfolioValue(strategy);
-            calculations.calcPortfolioReturn(strategy);
-            calculations.calcPortfolioVolatility(strategy);
-             */
+            calculations.calcPortfolioReturn(tickerList, strategy);
+            calculations.calcPortfolioVolatility(tickerList, strategy);
 
             //Direct to result page
             response.sendRedirect("result.jsp");

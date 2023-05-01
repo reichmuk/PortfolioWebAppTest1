@@ -97,10 +97,8 @@ public class Calculations {
     /**
      * Method that calculates the correlations between each instrument.
      * The results are stored in the MySQL-DB in the "metrics_summary" table (metric: Correl-Instrument1-Instrument2).
-     * @param portfolio The "current" portfolio.
      */
-    public void calcCorrelations(String portfolio){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+    public void calcCorrelations(ArrayList<String>tickerList){
 
         for(String ticker1 : tickerList){
             for(String ticker2 : tickerList){
@@ -114,7 +112,6 @@ public class Calculations {
             }
         }
     }
-
 
 
     //------------------------------------------------------------------------------------------------------------------
@@ -137,14 +134,13 @@ public class Calculations {
      * The results are stored in the MySQL-DB in the "metrics_summary" table (ticker: PORTFOLIO, metric: portfolioReturn).
      * @param portfolio The "current" portfolio.
      */
-    public void calcPortfolioReturn(String portfolio){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+    public void calcPortfolioReturn(ArrayList<String>tickerList, String portfolio){
         double portfolioReturn = 0;
         String metricName = portfolio+"PortfolioReturn";
 
-        for(String value:tickerList){
-            double weight = sqlTable.getPortfolioWeight(value,portfolio);
-            double instrumentReturn = sqlTable.getMetricSummaryValue(value,Constants.AVGSIMPLERETURN);
+        for(String ticker:tickerList){
+            double weight = sqlTable.getPortfolioWeight(ticker,portfolio);
+            double instrumentReturn = sqlTable.getMetricSummaryValue(ticker,Constants.AVGSIMPLERETURN);
             portfolioReturn= portfolioReturn+(weight*instrumentReturn);
         }
 
@@ -156,10 +152,14 @@ public class Calculations {
      * The results are stored in the MySQL-DB in the "metrics_summary" table (ticker: PORTFOLIO, metric: portfolioVolatility).
      * @param portfolio The "current" portfolio.
      */
-    public void calcPortfolioVolatility(String portfolio){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+    public void calcPortfolioVolatility(ArrayList<String> tickerList, String portfolio){
         double portfolioVolatility = 0;
-        int countInstruments = countPortfolioInstruments(portfolio);
+        int countInstruments = 0;
+
+        for(String count : tickerList){
+            countInstruments++;
+        }
+
         double weights[] = new double[countInstruments];
         double varianceCovarianceMatrix[][] = new double[countInstruments][countInstruments];
         int counter1 = 0;
@@ -167,12 +167,13 @@ public class Calculations {
         String metricName = portfolio+"PortfolioVolatility";
 
         //Write the weights into weights[]
-        for (String ticker : tickerList){
-            double weight = sqlTable.getPortfolioWeight(ticker, portfolio);
+        ArrayList<Double> portfolioWeightList = sqlTable.getPortfolioWeightList(portfolio);
+        for (double weight : portfolioWeightList){
             weights[counter1] = weight;
             counter1++;
         }
         counter1 = 0;
+
 
         //Write covariances into varianceCovarianceMatrix[][]
         for(String ticker : tickerList){
@@ -205,15 +206,18 @@ public class Calculations {
      * The results (new weights & new quantities) are stored in the MySQL-DB in the "portfolio" table (portfolio: minRisk).
      * @param portfolio The "current" portfolio.
      */
-    public void calcMinRiskPortfolio(String portfolio){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(Constants.CURRENT);
-        int countInstruments = countPortfolioInstruments(Constants.CURRENT);
+    public ArrayList<Integer> calcMinRiskPortfolio(ArrayList<String> tickerList, String portfolio){
+        int countInstruments = countInstruments(tickerList);
         int matrixSize = countInstruments+1;
         double lagrangeMatrix[][] = new double[matrixSize][matrixSize];
         double conditions[] = new double[matrixSize];
+        double portfolioValue;
         int counter1 = 0;
         int counter2 = 0;
         int counter3 = 0;
+        ArrayList<Double> weightList = new ArrayList<>();
+        ArrayList<Integer> quantityList = new ArrayList<>();
+        ArrayList<Double> latestPriceList = new ArrayList<>();
 
         //Write covariances into lagrangeMatrix[][]
         for(String ticker : tickerList){
@@ -254,18 +258,18 @@ public class Calculations {
         RealMatrix inverseMatrixLagrange = MatrixUtils.inverse(matrixLagrange);
         RealMatrix actual = inverseMatrixLagrange.multiply(matrixConditions);
 
-        //Store new weights in DB
-        /**
-         *
+        //Calculate new quantities and store new quantities and weights in DB
+        latestPriceList = sqlTable.getLatestPriceList(tickerList);
+        portfolioValue = sqlTable.getPortfolioValue(Constants.CURRENT);
         counter1=0;
-        for(String ticker : tickerList){
-            double newWeitght = actual.getEntry(counter1,0);
-            double price = sqlTable.getLatestPrice(ticker);
-            int newQuantity = calcInstrumentQuantity(Constants.CURRENT,newWeitght,price);
-            sqlTable.insertPortfolio(ticker,portfolio,newQuantity,newWeitght);
+        for (String ticker : tickerList){
+            weightList.add(actual.getEntry(counter1,0));
+            int quantity = (int) ((portfolioValue * actual.getEntry(counter1,0))/latestPriceList.get(counter1));
+            quantityList.add(quantity);
             counter1++;
         }
-         */
+        sqlTable.insertPortfolio(tickerList,portfolio,quantityList,weightList);
+        return quantityList;
     }
 
     /**
@@ -274,15 +278,18 @@ public class Calculations {
      * @param portfolio The "current" portfolio.
      * @param targetYield The condition targetReturn=x.
      */
-    public void calcOptimalPortfolio(String portfolio, double targetYield){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(Constants.CURRENT);
-        int countInstruments = countPortfolioInstruments(Constants.CURRENT);
+    public ArrayList<Integer> calcOptimalPortfolio(ArrayList<String> tickerList, String portfolio, double targetYield){
+        int countInstruments = countInstruments(tickerList);
         int matrixSize = countInstruments+2;
         double lagrangeMatrix[][] = new double[matrixSize][matrixSize];
         double conditions[] = new double[matrixSize];
+        double portfolioValue;
         int counter1 = 0;
         int counter2 = 0;
         int counter3 = 0;
+        ArrayList<Double> weightList = new ArrayList<>();
+        ArrayList<Integer> quantityList = new ArrayList<>();
+        ArrayList<Double> latestPriceList = new ArrayList<>();
 
 
         //Write covariances into lagrangeMatrix[][]
@@ -297,7 +304,6 @@ public class Calculations {
                 lagrangeMatrix[counter1][counter2]=varianceCovariance;
                 counter1++;
             }
-
             counter1=0;
             counter2++;
         }
@@ -333,40 +339,30 @@ public class Calculations {
         RealMatrix inverseMatrixLagrange = MatrixUtils.inverse(matrixLagrange);
         RealMatrix actual = inverseMatrixLagrange.multiply(matrixConditions);
 
-        //Store new weights in DB
-        /**
+
+        //Calculate new quantities and store new quantities and weights in DB
+        latestPriceList = sqlTable.getLatestPriceList(tickerList);
+        portfolioValue = sqlTable.getPortfolioValue(Constants.CURRENT);
         counter1=0;
-        for(String ticker : tickerList){
-            double newWeitght = actual.getEntry(counter1,0);
-            double price = sqlTable.getLatestPrice(ticker);
-            int newQuantity = calcInstrumentQuantity(Constants.CURRENT,newWeitght,price);
-            sqlTable.insertPortfolio(ticker,portfolio,newQuantity,newWeitght);
+        for (String ticker : tickerList){
+            weightList.add(actual.getEntry(counter1,0));
+            int quantity = (int) ((portfolioValue * actual.getEntry(counter1,0))/latestPriceList.get(counter1));
+            quantityList.add(quantity);
             counter1++;
         }
-         */
+        sqlTable.insertPortfolio(tickerList,portfolio,quantityList,weightList);
+        return quantityList;
     }
 
     //------------------------------------------------------------------------------------------------------------------
     // Support methods
     //------------------------------------------------------------------------------------------------------------------
 
-    /**
-     * Method that calculates the portfolioQuantity based on the give weight.
-     * @param weight The weight of the respective instrument in the portfolio.
-     * @return returns the instrumentQuantity
-     */
-    public int calcInstrumentQuantity(String portfolio, double weight, double price){
-        double portfolioValue = sqlTable.getPortfolioValue(portfolio);
-        double instrumentQuantity = (portfolioValue*weight)/price;
-        return (int) instrumentQuantity;
-    }
 
     /**
      * Method that counts the number of instruments in the portfolio.
-     * @param portfolio The "current" portfolio.
      */
-    public int countPortfolioInstruments(String portfolio){
-        ArrayList<String> tickerList = sqlTable.getPortfolioTickers(portfolio);
+    public int countInstruments(ArrayList<String> tickerList){
         int counter = 0;
 
         for(String value : tickerList){

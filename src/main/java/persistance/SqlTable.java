@@ -245,7 +245,10 @@ public class SqlTable {
         }catch (SQLException e){
             e.printStackTrace();
         }
-        System.out.println("test");
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
         return metricList;
 
     }
@@ -347,6 +350,30 @@ public class SqlTable {
         }
         return portfolioWeight;
     }
+
+    public ArrayList<Double> getPortfolioWeightList(String portfolio){
+        ArrayList<Double> portfolioWeightList = new ArrayList<>();
+        String portfolioString = "\""+portfolio+"\"";
+        Connection connection = getConnection();
+        String sqlCommand = "SELECT weight from portfolio where portfolio ="+portfolioString+";";
+
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+            while(resultSet.next()){
+                double value = Double.parseDouble(resultSet.getString(Constants.WEIGHT));
+                portfolioWeightList.add(value);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        try{connection.close();
+        } catch (SQLException e){e.printStackTrace();}
+
+        return portfolioWeightList;
+    }
+
 
     /**
      * Method that returns the value of the portfolio.
