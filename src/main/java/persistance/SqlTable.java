@@ -28,11 +28,11 @@ public class SqlTable {
      */
     public Connection getConnection(){
         Connection connection = null;
-        String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
-        //String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
+        //String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
+        String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
         String user = "root";
-        String password = "Blue_22!";
-        //String password = "BlueBlueBlue22";
+        //String password = "Blue_22!";
+        String password = "BlueBlueBlue22";
         try {
             connection = DriverManager.getConnection(url, user, password);
         } catch (SQLException e){
