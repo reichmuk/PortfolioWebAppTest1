@@ -4,19 +4,26 @@
 <%@ page import="java.sql.DriverManager" %>
 <%@ page import="domain.Calculations" %>
 <%@ page import="domain.Control" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <%--
   Created by IntelliJ IDEA.
   User: kevin.reichmuth
   Date: 31.08.2022
   Time: 08:00 AM
-  To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+
 <html>
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
     <title>Portfolio Web Application</title>
+
     <h1 style="display: inline-block" >Portfolio</h1>
     <h2 style="display: inline-block" >Analyse Tool</h2>
     <br>
@@ -35,129 +42,167 @@
         }
     </script>
 
-
 </head>
+
 <body>
+    <%
+        //Variables
+        ResultSet rs = null;
+        Statement stm = null;
+        String query = null;
 
-<%
-    //Variables
-    ResultSet rs = null;
-    Statement stm = null;
-    String query = null;
+        //Connection to DB
+        try {
+            query = "select * from instruments";
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            //String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
+            String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
+            String user = "root";
+            //String password = "Blue_22!";
+            String password = "BlueBlueBlue22";
+            Connection conn = DriverManager.getConnection(url, user, password);
+            stm = conn.createStatement();
+            rs = stm.executeQuery(query);
+        }catch (Exception ex){
+            ex.printStackTrace();
+            out.println("Error "+ex.getMessage());
+        }
+    %>
 
-    try {
-        query = "select * from instruments";
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        //String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-        String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
-        String user = "root";
-        //String password = "Blue_22!";
-        String password = "BlueBlueBlue22";
-        Connection conn = DriverManager.getConnection(url, user, password);
-        stm = conn.createStatement();
-        rs = stm.executeQuery(query);
-    }catch (Exception ex){
-        ex.printStackTrace();
-        out.println("Error "+ex.getMessage());
-    }
-%>
+    <!Portfolio Eingabe>
+    <div>
+        <h3>Portfolio Eingabe:</h3>
 
+        <form action="MainServlet" method="post">
+            <table id="table_portfolio_input">
+                <!Column name>
+                <tr>
+                    <th>Titel</th>
+                    <th>Anzahl</th>
+                </tr>
 
-<!Portfolio Eingabe>
-<div>
-    <h3>Portfolio Eingabe:</h3>
+                <!input counter>
+                <%
+                    // Retrieve the counter from the session
+                    Integer counter = (Integer) session.getAttribute("counter");
 
-    <form action="MainServlet" method="post">
+                    // If the counter is not in the session, initialize it to 5
+                    if (counter == null) {
+                        counter = 5;
+                        session.setAttribute("counter", counter);
+                    }
 
-        <table id="table_portfolio_input">
+                    String action = request.getParameter("action");
 
-            <!Column name>
-            <tr>
-                <th>Titel</th>
-                <th>Anzahl</th>
-            </tr>
+                    // Check if the action parameter is set and update the counter accordingly
+                    if (action != null && action.equals("increment")) {
+                        counter++;
+                        session.setAttribute("counter", counter);
+                    }
 
+                    for(int i = 0; i<counter;i++){
+                %>
 
-            <! ACHTUNG Zähler 5 Instrumente>
-            <%
-                for(int i = 0; i<5;i++){
-            %>
+                <!Row>
+                <tr>
+                    <td>
+                        <select name="instrument<%=i%>" class="operator">
+                            <option>Select Instrument</option>
+                            <%
+                                rs = stm.executeQuery(query);
+                                while (rs.next()){
+                            %>
+                            <option><%=rs.getString("name")%></option>
+                            <%
+                                }
+                            %>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" name="quantity<%=i%>" class="input" size="10" pattern="[0-9]+">
+                    </td>
+                </tr>
+                <%
+                    }
+                %>
+            </table>
 
-            <!Row 1>
-            <tr>
-                <td>
-                    <select name="instrument<%=i%>" class="input">
-                        <option>Select Instrument</option>
-                        <%
-                            rs = stm.executeQuery(query);
-                            while (rs.next()){
-                        %>
-                        <option><%=rs.getString("name")%></option>
-                        <%
-                            }
-                        %>
-                    </select>
-                </td>
-                <td>
-                    <input type="text" name="quantity<%=i%>" class="input" size="10" pattern="[0-9]+">
-                </td>
-            </tr>
-            <%
+            <label for="input_counter">Anzahl Instrumente:</label>
+            <input type="text" id="input_counter" name="counter" value="<%=counter%>" readonly>
+
+            <h3>Zeitintervall historische Kurse:</h3>
+            <input type="radio" id="3moTime" name="timeRange" class="radio" value="3mo" onchange="timeRadioValue(this.value)">
+            <label for="3moTime">3 Monate</label><br>
+            <input type="radio" id="6moTime" name="timeRange" class="radio" value="6mo" onchange="timeRadioValue(this.value)">
+            <label for="6moTime">6 Monate</label><br>
+            <input type="radio" id="1yrTime" name="timeRange" class="radio" value="1yr" onchange="timeRadioValue(this.value)">
+            <label for="1yrTime">1 Jahr</label><br>
+            <br>
+            <label>Ausgewählter Zeitintervall: </label>
+            <input type="text" id="input_time" name="time" value="" readonly>
+
+            <h3>Optimales Portfolio:</h3>
+
+            <input type="radio" id="minRisk" name="calc_strat" class="radio" value="minRisk" onchange="displayRadioValue(this.value)">
+            <label for="minRisk">Minimum Variance Portfolio</label><br>
+            <input type="radio" id="targetReturn" name="calc_strat" class="radio" value="targetReturn" onchange="displayRadioValue(this.value)">
+            <label for="targetReturn">Mean Variance Portfolio</label><br>
+            <br>
+            <label>Ausgewählte Strategie: </label>
+            <input type="text" id="input_strategy" name="strategy" value="" readonly>
+            <br>
+            <br>
+            <input type="range" min="0.1" max="20" value="10" step="0.1" class="slider" onchange="updateTextInput(this.value);">
+            <br>
+            <label for="input_targetReturn">Zielrendite in %: </label>
+            <input type="text" id="input_targetReturn" name="targetReturn" value="" readonly>
+
+            <script>
+                function displayRadioValue(val){
+                    document.getElementById('input_strategy').value=val;
                 }
-            %>
 
-        </table>
+                function timeRadioValue(val){
+                    document.getElementById('input_time').value=val;
+                }
 
-        <h3>Optimales Portfolio:</h3>
-
-        <input type="radio" id="minRisk" name="calc_strat" class="radio" value="minRisk" onchange="displayRadioValue(this.value)">
-        <label for="minRisk">Min-Risk-Portfolio</label><br>
-        <input type="radio" id="targetReturn" name="calc_strat" class="radio" value="targetReturn" onchange="displayRadioValue(this.value)">
-        <label for="targetReturn">Efficient Frontier (target return)</label><br>
-        <br>
-        <label>Ausgewählte Strategie: </label>
-        <input type="text" id="input_strategy" name="strategy" value="" readonly>
-        <br>
-        <br>
-        <input type="range" min="0.1" max="20" value="10" step="0.1" class="slider" onchange="updateTextInput(this.value);">
-        <br>
-        <label for="input_targetReturn">Zielrendite in %: </label>
-        <input type="text" id="input_targetReturn" name="targetReturn" value="" readonly>
+                function updateTextInput(val){
+                    document.getElementById('input_targetReturn').value=val;
+                }
 
 
-        <script>
-            function displayRadioValue(val){
-                document.getElementById('input_strategy').value=val;
-            }
-        </script>
 
-        <script>
-            function updateTextInput(val){
-                document.getElementById('input_targetReturn').value=val;
-            }
-        </script>
+            </script>
 
-        <br>
-        <br>
+            <br>
+            <br>
+            <button type="submit">Submit</button>
+            <br>
+        </form>
 
-        <button type="submit">Submit</button>
-        <br>
-        <br>
+        <form action="ResetServlet" method="get">
+            <button type="submit">Reset</button>
+        </form>
+
+        <form action="info.jsp">
+            <input name="infoButton" type="image" src="info_button.png" width="5%" height="2.5%">
+            <br>
+            <label>(info)</label>
+        </form>
+
+    </div>
+
+    <!-- Create a button that sends a request to increment the counter -->
+    <form method="get" action="<%= request.getRequestURI() %>">
+    <input type="hidden" name="action" value="increment">
+    <input type="submit" value="Instrument hinzufügen">
     </form>
 
-    <form action="ResetServlet" method="get">
-        <button type="submit">Reset</button>
-    </form>
-
-    <br>
-
-    <form action="info.jsp">
-        <input name="infoButton" type="image" src="info_button.png" width="5%" height="2.5%">
-        <br>
-        <label>(info)</label>
-    </form>
-
-</div>
+    <script>
+        $(document).ready(function () {
+            $("select").select2();
+        });
+    </script>
 
 </body>
 

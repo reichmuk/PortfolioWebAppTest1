@@ -43,12 +43,14 @@ public class YahooApi {
             ArrayList<Integer> timeStampListImport = new ArrayList<>();
             ArrayList<Double> priceList = new ArrayList<>();
             String ticker = tickerList.get(i);
+            //String timePeriod = "3mo";
             String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range=3mo&symbols="+ticker;
+            //String yahooUriNew = "https://yfapi.net/v8/finance/spark?interval=1d&range="+timePeriod+"&symbols="+ticker;
 
             //Connect to Yahoo API
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(yahooUri))
-                    .header("x-api-key", "61zOpmQVuH6tBHMXvoHj92mJh3RV8mri9ZIUvVsI")
+                    .header("x-api-key", "DjRrJcouJft3f9CvZSlN9tYrxDtogq45IvmpiVH0")
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
             try {

@@ -95,7 +95,8 @@ public class MainServlet extends HttpServlet {
 
         //Save selected instruments in instrumentList, quantities in quantityList
         boolean quantityValidation = true;
-        for(int i =0; i<5;i++){ //ACHTUNG LOOP noch anpassen!
+        int counter = Integer.parseInt(request.getParameter("counter").toString());
+        for(int i =0; i<counter;i++){ //ACHTUNG LOOP noch anpassen!
             String instrument = "instrument"+i;
             String instrumentValue = request.getParameter(instrument).toString();
             String quantity = "quantity"+i;
