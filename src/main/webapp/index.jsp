@@ -74,8 +74,49 @@
         <br>
         <br>
         <input id="file" type="file" />
-        <button>Upload</button>
+        <button type="button" onclick="processFile()">Upload</button>
     </form>
+
+    <script>
+        function processFile() {
+            const fileInput = document.getElementById('file');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const content = e.target.result;
+                    const rows = content.split('\n').map(row => row.trim());
+
+                    const tickerList = [];
+                    const qtyList = [];
+
+                    for (let i = 1; i < rows.length; i++) { // Skip the header row
+                        const [ticker, qty] = rows[i].split(';').map(data => data.trim());
+                        tickerList.push(ticker);
+                        qtyList.push(parseInt(qty));
+                    }
+
+                    // Display or further process the lists as needed
+                    console.log('Ticker List:', tickerList);
+                    console.log('Qty List:', qtyList);
+
+                    // Redirect to upload.jsp
+                    window.location.href = 'upload.jsp?tickerList=' + encodeURIComponent(JSON.stringify(tickerList)) + '&qtyList=' + encodeURIComponent(JSON.stringify(qtyList));
+
+                };
+
+                reader.readAsText(file);
+            } else {
+                alert('Please select a file before uploading.');
+            }
+        }
+    </script>
+
+
+
+
 
     <!Portfolio Eingabe>
     <div>
