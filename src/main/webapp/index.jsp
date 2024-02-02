@@ -69,6 +69,14 @@
         }
     %>
 
+    <form>
+        <label for="file"><b>File upload:</b></label>
+        <br>
+        <br>
+        <input id="file" type="file" />
+        <button>Upload</button>
+    </form>
+
     <!Portfolio Eingabe>
     <div>
         <h3>Portfolio Eingabe:</h3>
@@ -130,16 +138,20 @@
             <label for="input_counter">Anzahl Instrumente:</label>
             <input type="text" id="input_counter" name="counter" value="<%=counter%>" readonly>
 
+            <br>
+            <br>
+
+
             <h3>Zeitintervall historische Kurse:</h3>
-            <input type="radio" id="3moTime" name="timeRange" class="radio" value="3mo" onchange="timeRadioValue(this.value)">
+            <input type="radio" id="3moTime" name="timeRange" class="radio" value="3mo" onchange="timeRadioValue(this.value)" checked>
             <label for="3moTime">3 Monate</label><br>
             <input type="radio" id="6moTime" name="timeRange" class="radio" value="6mo" onchange="timeRadioValue(this.value)">
             <label for="6moTime">6 Monate</label><br>
-            <input type="radio" id="1yrTime" name="timeRange" class="radio" value="1yr" onchange="timeRadioValue(this.value)">
+            <input type="radio" id="1yrTime" name="timeRange" class="radio" value="1y" onchange="timeRadioValue(this.value)">
             <label for="1yrTime">1 Jahr</label><br>
             <br>
-            <label>Ausgewählter Zeitintervall: </label>
-            <input type="text" id="input_time" name="time" value="" readonly>
+            <label>Ausgewählter Zeitintervall:</label>
+            <input type="text" id="input_time" name="time" value="3mo" readonly>
 
             <h3>Optimales Portfolio:</h3>
 
@@ -169,8 +181,6 @@
                 function updateTextInput(val){
                     document.getElementById('input_targetReturn').value=val;
                 }
-
-
 
             </script>
 

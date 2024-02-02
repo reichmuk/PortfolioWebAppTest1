@@ -67,7 +67,8 @@ public class MainServlet extends HttpServlet {
 
         double targetReturnCondition=0;
 
-        //Get optimal portfolio parameter
+        //Get front-end parameters
+        String timeFrame = request.getParameter("time");
         Boolean strategyValidation = true;
         Boolean targetReturnValidation = true;
         String strategy = request.getParameter("strategy").toString();
@@ -75,6 +76,7 @@ public class MainServlet extends HttpServlet {
         calculations.setStrategy(strategy);
 
 
+        //Process selected parameters
         if(strategy.equals("")){
             strategyValidation=false;
         }
@@ -136,8 +138,8 @@ public class MainServlet extends HttpServlet {
 
             tickerList = sqlTable.getTickerList(instrumentList);
 
-            //Import and store prices of all selected instruments and get lastPriceList
-            yahooApi.priceImport(tickerList);
+            //Import and store prices of all selected instruments for the respective timeFrame and get lastPriceList
+            yahooApi.priceImport(tickerList, timeFrame);
             System.out.println("Price Import COMPLETED!");
 
             //Get lastPriceList
