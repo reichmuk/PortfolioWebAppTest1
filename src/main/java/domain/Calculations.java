@@ -172,6 +172,9 @@ public class Calculations {
         }
         counter1 = 0;
 
+        for(double weight : weights){
+            System.out.println(weight);
+        }
 
         //Write covariances into varianceCovarianceMatrix[][]
         for(String ticker : tickerList){

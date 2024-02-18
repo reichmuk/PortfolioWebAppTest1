@@ -4,6 +4,7 @@
 <%@ page import="java.sql.DriverManager" %>
 <%@ page import="domain.Calculations" %>
 <%@ page import="domain.Control" %>
+<%@ page import="constants.Constants" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%--
@@ -55,11 +56,10 @@
         try {
             query = "select * from instruments";
             Class.forName("com.mysql.cj.jdbc.Driver");
-            //String url = "jdbc:mysql://127.0.0.1:3306/instrumentDB?useSSL=false&allowPublicKeyRetrieval=true";
-            String url = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
-            String user = "root";
-            //String password = "Blue_22!";
+            String url = Constants.mysqlUrl;
             String password = "BlueBlueBlue22";
+            String user = "root";
+
             Connection conn = DriverManager.getConnection(url, user, password);
             stm = conn.createStatement();
             rs = stm.executeQuery(query);
@@ -113,9 +113,6 @@
             }
         }
     </script>
-
-
-
 
 
     <!Portfolio Eingabe>

@@ -43,7 +43,6 @@ public class YahooApi {
             ArrayList<Integer> timeStampListImport = new ArrayList<>();
             ArrayList<Double> priceList = new ArrayList<>();
             String ticker = tickerList.get(i);
-            String yahooUriOld = "https://yfapi.net/v8/finance/spark?interval=1d&range=3mo&symbols="+ticker;
             String yahooUri = "https://yfapi.net/v8/finance/spark?interval=1d&range="+timeFrame+"&symbols="+ticker;
 
             //Connect to Yahoo API

@@ -1,6 +1,7 @@
 package persistance;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import constants.Constants;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,9 +12,9 @@ public class ConnectionManager {
 
     static {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://185.237.96.243:3306/instrumentDB");
-        config.setUsername("root");
+        config.setJdbcUrl(Constants.mysqlUrl);
         config.setPassword("BlueBlueBlue22");
+        config.setUsername("root");
         dataSource = new HikariDataSource(config);
     }
 
