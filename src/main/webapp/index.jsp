@@ -5,6 +5,8 @@
 <%@ page import="domain.Calculations" %>
 <%@ page import="domain.Control" %>
 <%@ page import="constants.Constants" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="com.google.gson.Gson" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%--
@@ -51,6 +53,8 @@
         ResultSet rs = null;
         Statement stm = null;
         String query = null;
+        ArrayList<String> instrumentList = new ArrayList<>();
+        ArrayList<String> ccyList= new ArrayList<>();
 
         //Connection to DB
         try {
@@ -67,8 +71,25 @@
             ex.printStackTrace();
             out.println("Error "+ex.getMessage());
         }
+
+        rs = stm.executeQuery(query);
+
+        //Add all instruments to instrumentList
+        while (rs.next()) {
+            instrumentList.add(rs.getString("name"));
+            ccyList.add(rs.getString("ccy"));
+        }
+
     %>
 
+    <script>
+        // Sample instrument list and ccyList
+        var instrumentList = <%= new Gson().toJson(instrumentList) %>;
+        var ccyList = <%= new Gson().toJson(ccyList)%>;
+    </script>
+
+
+    <!-- File Upload -->
     <form>
         <label for="file"><b>File upload:</b></label>
         <br>
@@ -125,6 +146,7 @@
                 <tr>
                     <th>Titel</th>
                     <th>Anzahl</th>
+                    <th>CCY</th>
                 </tr>
 
                 <!input counter>
@@ -152,26 +174,47 @@
                 <!Row>
                 <tr>
                     <td>
-                        <select name="instrument<%=i%>" class="operator">
+                        <select name="instrument<%=i%>" class="operator" onchange="updateCcy(<%=i%>)">
                             <option>Select Instrument</option>
                             <%
                                 rs = stm.executeQuery(query);
                                 while (rs.next()){
                             %>
-                            <option><%=rs.getString("name")%></option>
+                                <option><%=rs.getString("name")%></option>
                             <%
                                 }
                             %>
                         </select>
                     </td>
+
                     <td>
                         <input type="text" name="quantity<%=i%>" class="input" size="10" pattern="[0-9]+">
                     </td>
+                    <td>
+                        <input type="text" name="Ccy<%=i%>" class="input_data" value="" readonly>
+                    </td>
+
+
+                    <script>
+
+                        function updateCcy(i){
+                            var selectElement = document.querySelector('select[name="instrument' + i + '"]');
+                            var selectedInstrument = selectElement.value;
+                            var position = instrumentList.indexOf(selectedInstrument);
+                            var instrumentCcy = ccyList[position];
+                            var ccyNr = 'Ccy'+i;
+                            document.querySelector('input[name="' + ccyNr + '"]').value = instrumentCcy;
+                        }
+
+                    </script>
+
                 </tr>
                 <%
                     }
                 %>
             </table>
+
+
 
             <label for="input_counter">Anzahl Instrumente:</label>
             <input type="text" id="input_counter" name="counter" value="<%=counter%>" readonly>

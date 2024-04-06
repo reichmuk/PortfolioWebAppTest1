@@ -30,7 +30,6 @@ public class SqlTable {
         Connection connection = null;
         String url = Constants.mysqlUrl;
         String password = "BlueBlueBlue22";
-        //String password = "Blue_22!";
         String user = "root";
 
         try {
@@ -192,7 +191,7 @@ public class SqlTable {
     }
 
     /**
-     * Method to to get the latest price of an instrument.
+     * Method to get the latest price of an instrument.
      * @param ticker The ticker of the instrument.
      * @return returns the latest price
      */
@@ -201,6 +200,34 @@ public class SqlTable {
         int listSize = prices.size()-1;
         double price = prices.get(listSize);
         return price;
+    }
+
+    /**
+     * Method to get the currency for a given instrumentName or ticker.
+     * @param instrumentName The name of the instrument.
+     * @return returns the respective CCY.
+     */
+    public String getInstrumentCcy(String instrumentName){
+        String name = "\""+instrumentName+"\"";
+        String sqlCommand = "SELECT ccy from instruments where ticker="+name+";";
+        String result = "";
+
+        try(Connection connection = ConnectionManager.getConnection()){
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlCommand);
+
+            while(resultSet.next()){
+                result = resultSet.getString(Constants.CCY);
+            }
+
+            // Close the ResultSet, PreparedStatement, and Connection
+            resultSet.close();
+            statement.close();
+
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     /**
