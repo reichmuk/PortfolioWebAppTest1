@@ -30,9 +30,7 @@
     <h1 style="display: inline-block" >Portfolio</h1>
     <h2 style="display: inline-block" >Analyse Tool</h2>
     <br>
-    <b>Willkommen im Portfolio Analyse Tool!</b>
-    <br>
-    <p>Bitte selektieren Sie ihre Titel und erfassen die dazugehörige Anzahl "QTY" im Bereich Musterportfolio.</p>
+
 
     <script>
         function inputValidation(){
@@ -55,6 +53,7 @@
         String query = null;
         ArrayList<String> instrumentList = new ArrayList<>();
         ArrayList<String> ccyList= new ArrayList<>();
+        ArrayList<String> tickerList = new ArrayList<>();
 
         //Connection to DB
         try {
@@ -78,6 +77,7 @@
         while (rs.next()) {
             instrumentList.add(rs.getString("name"));
             ccyList.add(rs.getString("ccy"));
+            tickerList.add(rs.getString("ticker"));
         }
 
     %>
@@ -86,59 +86,25 @@
         // Sample instrument list and ccyList
         var instrumentList = <%= new Gson().toJson(instrumentList) %>;
         var ccyList = <%= new Gson().toJson(ccyList)%>;
+        var tickerList = <%= new Gson().toJson(tickerList)%>;
+        var yhFinanceKey = <%= new Gson().toJson(Constants.YHFINANCEKEY)%>
     </script>
 
 
-    <!-- File Upload -->
-    <form>
-        <label for="file"><b>File upload:</b></label>
-        <br>
-        <br>
-        <input id="file" type="file" />
-        <button type="button" onclick="processFile()">Upload</button>
-    </form>
 
-    <script>
-        function processFile() {
-            const fileInput = document.getElementById('file');
-            const file = fileInput.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-
-                reader.onload = function (e) {
-                    const content = e.target.result;
-                    const rows = content.split('\n').map(row => row.trim());
-
-                    const tickerList = [];
-                    const qtyList = [];
-
-                    for (let i = 1; i < rows.length; i++) { // Skip the header row
-                        const [ticker, qty] = rows[i].split(';').map(data => data.trim());
-                        tickerList.push(ticker);
-                        qtyList.push(parseInt(qty));
-                    }
-
-                    // Display or further process the lists as needed
-                    console.log('Ticker List:', tickerList);
-                    console.log('Qty List:', qtyList);
-
-                    // Redirect to upload.jsp
-                    window.location.href = 'upload.jsp?tickerList=' + encodeURIComponent(JSON.stringify(tickerList)) + '&qtyList=' + encodeURIComponent(JSON.stringify(qtyList));
-
-                };
-
-                reader.readAsText(file);
-            } else {
-                alert('Please select a file before uploading.');
-            }
-        }
-    </script>
 
 
     <!Portfolio Eingabe>
     <div>
         <h3>Portfolio Eingabe:</h3>
+
+        <table class="table_summary_values">
+            <tr>
+                <td><label>Portfoliowert CHF (aktuell):</label></td>
+                <td><input type="text" name="portfolioValue" class="data" value="" readonly></td>
+            </tr>
+        </table>
+        <br>
 
         <form action="MainServlet" method="post">
             <table id="table_portfolio_input">
@@ -146,7 +112,12 @@
                 <tr>
                     <th>Titel</th>
                     <th>Anzahl</th>
-                    <th>CCY</th>
+                    <th>Währung</th>
+                    <th>Preis</th>
+                    <th>% Change</th>
+                    <th>Value</th>
+                    <th>Weight %</th>
+
                 </tr>
 
                 <!input counter>
@@ -174,7 +145,7 @@
                 <!Row>
                 <tr>
                     <td>
-                        <select name="instrument<%=i%>" class="operator" onchange="updateCcy(<%=i%>)">
+                        <select name="instrument<%=i%>" class="operator" onchange="updateInstrument(<%=i%>)">
                             <option>Select Instrument</option>
                             <%
                                 rs = stm.executeQuery(query);
@@ -188,24 +159,108 @@
                     </td>
 
                     <td>
-                        <input type="text" name="quantity<%=i%>" class="input" size="10" pattern="[0-9]+">
+                        <input type="text" name="quantity<%=i%>" class="input" size="10" pattern="[0-9]+" onchange="updateWeight(<%=i%>)">
                     </td>
+
                     <td>
-                        <input type="text" name="Ccy<%=i%>" class="input_data" value="" readonly>
+                        <input type="text" name="ccy<%=i%>" class="data" value="" readonly>
+                    </td>
+
+                    <td>
+                        <input type="text" name="price<%=i%>" class="data" value="" readonly>
+                    </td>
+
+                    <td>
+                        <input type="text" name="change<%=i%>" class="data" value="" readonly>
+                    </td>
+
+                    <td>
+                        <input type="text" name="value<%=i%>" class="data" value="" readonly>
+                    </td>
+
+                    <td>
+                        <input type="text" name="weight<%=i%>" class="data" value="" readonly>
                     </td>
 
 
                     <script>
-
-                        function updateCcy(i){
+                        function updateInstrument(i){
+                            //update CCY
                             var selectElement = document.querySelector('select[name="instrument' + i + '"]');
                             var selectedInstrument = selectElement.value;
                             var position = instrumentList.indexOf(selectedInstrument);
                             var instrumentCcy = ccyList[position];
-                            var ccyNr = 'Ccy'+i;
+                            var ccyNr = 'ccy'+i;
                             document.querySelector('input[name="' + ccyNr + '"]').value = instrumentCcy;
+
+                            //update price
+                            var priceNr = 'price'+i;
+                            var changeNr = 'change'+i;
+                            var instrumentTicker = tickerList[position]
+
+                            $(document).ready(function() {
+                                var instrumentPrice;
+                                var url = 'https://yfapi.net/v6/finance/quote?region=US&lang=en&symbols='+instrumentTicker;
+                                $.ajax({
+                                    url: url,
+                                    type: "GET",
+                                    dataType: "json",
+                                    headers: {
+                                        'accept': 'application/json',
+                                        'X-API-KEY': 'FsZKqJFd6Z2Usj0TUTTGqdrtmEIRXd191njIimD8'
+                                    },
+                                    success: function(response) {
+                                        var instrumentPrice = response.quoteResponse.result[0].regularMarketPrice;
+                                        var priceChange = response.quoteResponse.result[0].regularMarketChangePercent;
+                                        priceChange = priceChange.toFixed(2);
+                                        if (priceChange < 0) {
+                                            document.querySelector('input[name="change' + i + '"]').classList.add('negative');
+                                        }
+                                        priceChange += "%"
+                                        document.querySelector('input[name="' + priceNr + '"]').value = instrumentPrice;
+                                        document.querySelector('input[name="' + changeNr + '"]').value = priceChange;
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.error("Error fetching stock price:", error);
+                                    }
+                                });
+                            });
+
+                            var quantity = parseFloat(document.querySelector('input[name="quantity' + i + '"]').value);
+                            if(!isNaN(quantity)){
+                                console.log("quantity is non NaN");
+                                updateWeight(i);
+                            }
                         }
 
+                        function updateWeight(instrumentNumber){
+                            var portfolioValue = 0;
+
+                            setTimeout(function(){
+                                for (var i = 0; i <= instrumentNumber; i++) {
+                                    var quantity = parseFloat(document.querySelector('input[name="quantity' + i + '"]').value);
+                                    var price = parseFloat(document.querySelector('input[name="price' + i + '"]').value);
+
+                                    if(!isNaN(price)){
+                                        var instrumentValue = parseFloat((quantity * price).toFixed(2));
+                                        portfolioValue += instrumentValue;
+                                        document.querySelector('input[name="value' + i + '"]').value = instrumentValue;
+                                    }
+                                }
+
+                                for (var i = 0; i <= instrumentNumber; i++) {
+                                    var quantity = parseFloat(document.querySelector('input[name="quantity' + i + '"]').value);
+                                    var price = parseFloat(document.querySelector('input[name="price' + i + '"]').value);
+
+                                    if(!isNaN(price)){
+                                        var instrumentValue = quantity * price;
+                                        var weight = (instrumentValue/portfolioValue*100).toFixed(2)+"%";
+                                        document.querySelector('input[name="weight' + i + '"]').value = weight;
+                                    }
+                                }
+                                document.querySelector('input[name="portfolioValue"]').value = portfolioValue;
+                            },1000);
+                        }
                     </script>
 
                 </tr>
@@ -293,6 +348,54 @@
         $(document).ready(function () {
             $("select").select2();
         });
+    </script>
+
+
+
+    <!-- File Upload -->
+    <form>
+        <label for="file"><b>File upload:</b></label>
+        <br>
+        <br>
+        <input id="file" type="file" />
+        <button type="button" onclick="processFile()">Upload</button>
+    </form>
+
+    <script>
+        function processFile() {
+            const fileInput = document.getElementById('file');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const content = e.target.result;
+                    const rows = content.split('\n').map(row => row.trim());
+
+                    const tickerList = [];
+                    const qtyList = [];
+
+                    for (let i = 1; i < rows.length; i++) { // Skip the header row
+                        const [ticker, qty] = rows[i].split(';').map(data => data.trim());
+                        tickerList.push(ticker);
+                        qtyList.push(parseInt(qty));
+                    }
+
+                    // Display or further process the lists as needed
+                    console.log('Ticker List:', tickerList);
+                    console.log('Qty List:', qtyList);
+
+                    // Redirect to upload.jsp
+                    window.location.href = 'upload.jsp?tickerList=' + encodeURIComponent(JSON.stringify(tickerList)) + '&qtyList=' + encodeURIComponent(JSON.stringify(qtyList));
+
+                };
+
+                reader.readAsText(file);
+            } else {
+                alert('Please select a file before uploading.');
+            }
+        }
     </script>
 
 </body>

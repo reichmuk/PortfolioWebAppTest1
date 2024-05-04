@@ -1,4 +1,5 @@
 package domain;
+import constants.Constants;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import persistance.SqlTable;
@@ -48,7 +49,7 @@ public class YahooApi {
             //Connect to Yahoo API
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(yahooUri))
-                    .header("x-api-key", "FsZKqJFd6Z2Usj0TUTTGqdrtmEIRXd191njIimD8")
+                    .header("x-api-key", Constants.YHFINANCEKEY)
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
             try {

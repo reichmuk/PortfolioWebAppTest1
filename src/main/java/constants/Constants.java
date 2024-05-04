@@ -13,6 +13,8 @@ public class Constants {
     public static final String mysqlUrl = "jdbc:mysql://127.0.0.1:3306/instrumentDB";
     // Kamatera
     //public static final String mysqlUrl = "jdbc:mysql://185.237.96.243:3306/instrumentDB";
+    //YH Finance API key
+    public static final String YHFINANCEKEY = "FsZKqJFd6Z2Usj0TUTTGqdrtmEIRXd191njIimD8";
     public static final String MINRISK = "minRisk";
     public static final String TARGETRETURN = "targetReturn";
     public static final String CURRENT = "current";
