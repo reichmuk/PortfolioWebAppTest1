@@ -95,7 +95,7 @@
 
 
     <!Portfolio Eingabe>
-    <div>
+    <div id="div_input">
         <h3>Portfolio Eingabe:</h3>
 
         <table class="table_summary_values">
@@ -269,41 +269,44 @@
                 %>
             </table>
 
-
-
             <label for="input_counter">Anzahl Instrumente:</label>
             <input type="text" id="input_counter" name="counter" value="<%=counter%>" readonly>
 
             <br>
             <br>
 
+            <div class="container">
+                <div class="sub-div">
+                    <h4>Zeitintervall historische Kurse:</h4>
+                    <input type="radio" id="3moTime" name="timeRange" class="radio" value="3mo" onchange="timeRadioValue(this.value)" checked>
+                    <label for="3moTime">3 Monate</label><br>
+                    <input type="radio" id="6moTime" name="timeRange" class="radio" value="6mo" onchange="timeRadioValue(this.value)">
+                    <label for="6moTime">6 Monate</label><br>
+                    <input type="radio" id="1yrTime" name="timeRange" class="radio" value="1y" onchange="timeRadioValue(this.value)">
+                    <label for="1yrTime">1 Jahr</label><br>
+                    <br>
+                    <label>Ausgewählter Zeitintervall:</label>
+                    <input type="text" id="input_time" name="time" value="3mo" readonly>
+                </div>
 
-            <h3>Zeitintervall historische Kurse:</h3>
-            <input type="radio" id="3moTime" name="timeRange" class="radio" value="3mo" onchange="timeRadioValue(this.value)" checked>
-            <label for="3moTime">3 Monate</label><br>
-            <input type="radio" id="6moTime" name="timeRange" class="radio" value="6mo" onchange="timeRadioValue(this.value)">
-            <label for="6moTime">6 Monate</label><br>
-            <input type="radio" id="1yrTime" name="timeRange" class="radio" value="1y" onchange="timeRadioValue(this.value)">
-            <label for="1yrTime">1 Jahr</label><br>
-            <br>
-            <label>Ausgewählter Zeitintervall:</label>
-            <input type="text" id="input_time" name="time" value="3mo" readonly>
+                <div class="sub-div">
+                    <h4>Optimales Portfolio:</h4>
+                    <input type="radio" id="minRisk" name="calc_strat" class="radio" value="minRisk" onchange="displayRadioValue(this.value)">
+                    <label for="minRisk">Minimum Variance Portfolio</label><br>
+                    <input type="radio" id="targetReturn" name="calc_strat" class="radio" value="targetReturn" onchange="displayRadioValue(this.value)">
+                    <label for="targetReturn">Mean Variance Portfolio</label><br>
+                    <br>
+                    <label>Ausgewählte Strategie: </label>
+                    <input type="text" id="input_strategy" name="strategy" value="" readonly>
+                    <br>
+                    <br>
+                    <input type="range" min="0.1" max="20" value="10" step="0.1" class="slider" onchange="updateTextInput(this.value);">
+                    <br>
+                    <label for="input_targetReturn">Zielrendite in %: </label>
+                    <input type="text" id="input_targetReturn" name="targetReturn" value="" readonly>
+                </div>
 
-            <h3>Optimales Portfolio:</h3>
-
-            <input type="radio" id="minRisk" name="calc_strat" class="radio" value="minRisk" onchange="displayRadioValue(this.value)">
-            <label for="minRisk">Minimum Variance Portfolio</label><br>
-            <input type="radio" id="targetReturn" name="calc_strat" class="radio" value="targetReturn" onchange="displayRadioValue(this.value)">
-            <label for="targetReturn">Mean Variance Portfolio</label><br>
-            <br>
-            <label>Ausgewählte Strategie: </label>
-            <input type="text" id="input_strategy" name="strategy" value="" readonly>
-            <br>
-            <br>
-            <input type="range" min="0.1" max="20" value="10" step="0.1" class="slider" onchange="updateTextInput(this.value);">
-            <br>
-            <label for="input_targetReturn">Zielrendite in %: </label>
-            <input type="text" id="input_targetReturn" name="targetReturn" value="" readonly>
+            </div>
 
             <script>
                 function displayRadioValue(val){
@@ -337,6 +340,8 @@
         </form>
 
     </div>
+
+
 
     <!-- Create a button that sends a request to increment the counter -->
     <form method="get" action="<%= request.getRequestURI() %>">
